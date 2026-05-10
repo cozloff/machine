@@ -1,0 +1,3 @@
+/home/cozloff/Projects/machine/build/CMakeFiles/machine.dir
+/home/cozloff/Projects/machine/build/CMakeFiles/edit_cache.dir
+/home/cozloff/Projects/machine/build/CMakeFiles/rebuild_cache.dir
