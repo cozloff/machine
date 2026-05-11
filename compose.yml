@@ -1,0 +1,11 @@
+services:
+  machine-dev:
+    build:
+      context: .
+      target: build
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    command: sh -lc "mkdir -p build/container && tail -f /dev/null"
+    stdin_open: true
+    tty: true

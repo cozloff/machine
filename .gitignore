@@ -4,3 +4,6 @@
 *.tfstate.*
 *.tfvars
 !.tfvars.example
+.agents
+/data/machine.db
+/build
