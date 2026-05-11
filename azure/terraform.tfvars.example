@@ -1,0 +1,5 @@
+resource_group_name    = "rg-machine-dev"
+location               = "westus2"
+storage_account_prefix = "machinestore"
+container_name         = "data"
+state_container_name   = "tfstate"
