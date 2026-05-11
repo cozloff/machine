@@ -20,5 +20,5 @@ To install Windows Dependencies:
 ```bash
 choco install cmake
 choco install make
-choco install sqlite
+make deps-windows
 ```

@@ -2,6 +2,7 @@ COMPOSE := docker compose
 SERVICE := machine-dev
 BUILD_DIR := build/container
 LOCAL_BUILD_DIR := /tmp/machine-build
+VCPKG_ROOT ?= C:/vcpkg
 
 .PHONY: up down shell configure build run rebuild logs configure-local build-local deps-ubuntu
 
@@ -38,3 +39,9 @@ build-local:
 deps-ubuntu:
 	sudo apt update
 	sudo apt install -y build-essential cmake libsqlite3-dev libcurl4-openssl-dev
+
+deps-windows:
+	choco install -y cmake ninja
+	test -d "$(VCPKG_ROOT)" || git clone https://github.com/microsoft/vcpkg "$(VCPKG_ROOT)"
+	cmd.exe /C "$(VCPKG_ROOT)/bootstrap-vcpkg.bat"
+	"$(VCPKG_ROOT)/vcpkg.exe" install sqlite3 curl
