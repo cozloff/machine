@@ -1,9 +1,88 @@
+#include "pubchem.h"
+
+#include <curl/curl.h>
+#include <sqlite3.h>
 #include <unistd.h>
+
 #include <chrono>
-#include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <sqlite3.h>
+#include <string>
+#include <vector>
+
+struct Candidate {
+    const char* name;
+    const char* pubchem_query;
+    const char* mechanism;
+    const char* evidence_note;
+};
+
+static void print_line(const char* message) {
+    write(STDOUT_FILENO, message, std::strlen(message));
+}
+
+static bool exec_sql(sqlite3* db, const char* sql) {
+    char* err_msg = nullptr;
+    if (sqlite3_exec(db, sql, nullptr, nullptr, &err_msg) != SQLITE_OK) {
+        std::fprintf(stderr, "SQLite exec failed: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return false;
+    }
+
+    return true;
+}
+
+static bool bind_text(sqlite3_stmt* stmt, int index, const std::string& value) {
+    return sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_TRANSIENT) == SQLITE_OK;
+}
+
+static bool upsert_candidate(
+    sqlite3* db,
+    const Candidate& candidate,
+    const CompoundProperties& properties
+) {
+    const char* sql =
+        "INSERT INTO molecule_candidates ("
+        "name, pubchem_cid, title, canonical_smiles, molecular_formula, "
+        "molecular_weight, inchikey, mechanism, evidence_note, fetched_at"
+        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) "
+        "ON CONFLICT(name) DO UPDATE SET "
+        "pubchem_cid = excluded.pubchem_cid, "
+        "title = excluded.title, "
+        "canonical_smiles = excluded.canonical_smiles, "
+        "molecular_formula = excluded.molecular_formula, "
+        "molecular_weight = excluded.molecular_weight, "
+        "inchikey = excluded.inchikey, "
+        "mechanism = excluded.mechanism, "
+        "evidence_note = excluded.evidence_note, "
+        "fetched_at = CURRENT_TIMESTAMP;";
+
+    sqlite3_stmt* stmt = nullptr;
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::fprintf(stderr, "SQLite prepare failed: %s\n", sqlite3_errmsg(db));
+        return false;
+    }
+
+    const bool ok =
+        bind_text(stmt, 1, candidate.name) &&
+        bind_text(stmt, 2, properties.cid) &&
+        bind_text(stmt, 3, properties.title) &&
+        bind_text(stmt, 4, properties.canonical_smiles) &&
+        bind_text(stmt, 5, properties.molecular_formula) &&
+        bind_text(stmt, 6, properties.molecular_weight) &&
+        bind_text(stmt, 7, properties.inchikey) &&
+        bind_text(stmt, 8, candidate.mechanism) &&
+        bind_text(stmt, 9, candidate.evidence_note);
+
+    if (!ok || sqlite3_step(stmt) != SQLITE_DONE) {
+        std::fprintf(stderr, "SQLite upsert failed: %s\n", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return false;
+    }
+
+    sqlite3_finalize(stmt);
+    return true;
+}
 
 int main() {
     using Clock = std::chrono::steady_clock;
@@ -11,92 +90,80 @@ int main() {
 
     const Clock::time_point start = Clock::now();
 
-    int a = 1 + 1;
+    sqlite3* db = nullptr;
+    if (sqlite3_open("data/machine.db", &db) != SQLITE_OK) {
+        std::fprintf(stderr, "SQLite open failed: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 1;
+    }
+
+    const char* schema_sql =
+        "CREATE TABLE IF NOT EXISTS molecule_candidates ("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "name TEXT NOT NULL UNIQUE,"
+        "pubchem_cid TEXT,"
+        "title TEXT,"
+        "canonical_smiles TEXT,"
+        "molecular_formula TEXT,"
+        "molecular_weight TEXT,"
+        "inchikey TEXT,"
+        "mechanism TEXT,"
+        "evidence_note TEXT,"
+        "fetched_at TEXT NOT NULL"
+        ");";
+
+    if (!exec_sql(db, schema_sql)) {
+        sqlite3_close(db);
+        return 1;
+    }
+
+    const std::vector<Candidate> candidates = {
+        {"valproic acid", "valproic acid", "HDAC inhibitor", "Common small-molecule reprogramming enhancer"},
+        {"CHIR99021", "CHIR99021", "GSK3 inhibitor", "Component of chemical reprogramming cocktails"},
+        {"RepSox", "RepSox", "TGF-beta receptor inhibitor", "Often used as a reprogramming enhancer"},
+        {"tranylcypromine", "tranylcypromine", "LSD1/KDM1A inhibitor", "Epigenetic modifier used in reprogramming contexts"},
+        {"forskolin", "forskolin", "adenylyl cyclase activator", "Component of VC6TFZ-style chemical reprogramming cocktails"},
+        {"DZNep", "3-Deazaneplanocin A", "EZH2/PRC2 pathway inhibitor", "Epigenetic small molecule used in reprogramming studies"},
+        {"5-azacytidine", "5-azacytidine", "DNA methyltransferase inhibitor", "Epigenetic modifier relevant to cell-state resetting"},
+        {"RG108", "RG108", "DNA methyltransferase inhibitor", "Non-nucleoside DNMT inhibitor"},
+        {"sodium butyrate", "sodium butyrate", "HDAC inhibitor", "Common chromatin-opening reprogramming enhancer"},
+        {"BIX-01294", "BIX-01294", "G9a/EHMT2 inhibitor", "Histone methyltransferase inhibitor used in reprogramming studies"},
+        {"TTNPB", "TTNPB", "retinoic acid receptor agonist", "Used in some chemical reprogramming combinations"},
+        {"SB431542", "SB431542", "TGF-beta receptor inhibitor", "Small-molecule pathway modulator used in stem-cell workflows"}
+    };
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    CURL* curl = curl_easy_init();
+    if (curl == nullptr) {
+        print_line("Failed to initialize libcurl\n");
+        sqlite3_close(db);
+        curl_global_cleanup();
+        return 1;
+    }
+
+    int stored = 0;
+    for (const Candidate& candidate : candidates) {
+        CompoundProperties properties;
+        if (!fetch_pubchem_properties(curl, candidate.pubchem_query, &properties)) {
+            std::fprintf(stderr, "Skipping %s\n", candidate.name);
+            continue;
+        }
+
+        if (upsert_candidate(db, candidate, properties)) {
+            ++stored;
+            std::printf("Stored %-18s PubChem CID %s\n", candidate.name, properties.cid.c_str());
+        }
+    }
+
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
 
     const Clock::time_point end = Clock::now();
+    const long long total_ns = std::chrono::duration_cast<Nanoseconds>(end - start).count();
 
-    const double total_ns = std::chrono::duration_cast<Nanoseconds>(
-        end - start
-    ).count();
+    std::printf("Stored candidates: %d\n", stored);
+    std::printf("Total ns: %lld\n", total_ns);
 
-    char buffer[128];
-
-    const int len = std::snprintf(
-        buffer,
-        sizeof(buffer),
-        "Total ns: %lld\n",
-        static_cast<long long>(total_ns)
-    );
-
-    write(STDOUT_FILENO, buffer, static_cast<std::size_t>(len));
-
-    sqlite3* db = nullptr;
-    char* err_msg = nullptr;
-
-    if (sqlite3_open("data/machine.db", &db) != SQLITE_OK) {
-        std::snprintf(
-            buffer,
-            sizeof(buffer),
-            "SQLite open failed: %s\n",
-            sqlite3_errmsg(db)
-        );
-        write(STDERR_FILENO, buffer, std::strlen(buffer));
-        sqlite3_close(db);
-        return 1;
-    }
-
-    const char* setup_sql =
-        "CREATE TABLE IF NOT EXISTS smoke_test ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "created_at TEXT DEFAULT CURRENT_TIMESTAMP"
-        ");"
-        "INSERT INTO smoke_test DEFAULT VALUES;";
-
-    if (sqlite3_exec(db, setup_sql, nullptr, nullptr, &err_msg) != SQLITE_OK) {
-        std::snprintf(
-            buffer,
-            sizeof(buffer),
-            "SQLite exec failed: %s\n",
-            err_msg
-        );
-        write(STDERR_FILENO, buffer, std::strlen(buffer));
-        sqlite3_free(err_msg);
-        sqlite3_close(db);
-        return 1;
-    }
-
-    sqlite3_stmt* stmt = nullptr;
-    if (sqlite3_prepare_v2(
-            db,
-            "SELECT COUNT(*) FROM smoke_test;",
-            -1,
-            &stmt,
-            nullptr
-        ) != SQLITE_OK) {
-        std::snprintf(
-            buffer,
-            sizeof(buffer),
-            "SQLite prepare failed: %s\n",
-            sqlite3_errmsg(db)
-        );
-        write(STDERR_FILENO, buffer, std::strlen(buffer));
-        sqlite3_close(db);
-        return 1;
-    }
-
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        const int row_count = sqlite3_column_int(stmt, 0);
-        const int sqlite_len = std::snprintf(
-            buffer,
-            sizeof(buffer),
-            "SQLite smoke_test rows: %d\n",
-            row_count
-        );
-        write(STDOUT_FILENO, buffer, static_cast<std::size_t>(sqlite_len));
-    }
-
-    sqlite3_finalize(stmt);
     sqlite3_close(db);
-
     return 0;
 }
