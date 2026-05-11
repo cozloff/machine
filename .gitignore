@@ -1,1 +1,6 @@
 .history
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!.tfvars.example
