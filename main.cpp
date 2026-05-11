@@ -2,11 +2,9 @@
 
 #include <curl/curl.h>
 #include <sqlite3.h>
-#include <unistd.h>
 
 #include <chrono>
 #include <cstdio>
-#include <cstring>
 #include <string>
 #include <vector>
 
@@ -16,10 +14,6 @@ struct Candidate {
     const char* mechanism;
     const char* evidence_note;
 };
-
-static void print_line(const char* message) {
-    write(STDOUT_FILENO, message, std::strlen(message));
-}
 
 static bool exec_sql(sqlite3* db, const char* sql) {
     char* err_msg = nullptr;
@@ -135,7 +129,7 @@ int main() {
     curl_global_init(CURL_GLOBAL_DEFAULT);
     CURL* curl = curl_easy_init();
     if (curl == nullptr) {
-        print_line("Failed to initialize libcurl\n");
+        std::fprintf(stderr, "Failed to initialize libcurl\n");
         sqlite3_close(db);
         curl_global_cleanup();
         return 1;
