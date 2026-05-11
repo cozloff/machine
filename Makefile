@@ -1,8 +1,9 @@
 COMPOSE := docker compose
 SERVICE := machine-dev
 BUILD_DIR := build/container
+LOCAL_BUILD_DIR := /tmp/machine-build
 
-.PHONY: up down shell configure build run rebuild logs
+.PHONY: up down shell configure build run rebuild logs configure-local build-local deps-ubuntu
 
 up:
 	$(COMPOSE) up -d --build
@@ -27,3 +28,13 @@ rebuild:
 
 logs:
 	$(COMPOSE) logs -f $(SERVICE)
+
+configure-local:
+	cmake -S . -B $(LOCAL_BUILD_DIR)
+
+build-local:
+	cmake --build $(LOCAL_BUILD_DIR)
+
+deps-ubuntu:
+	sudo apt update
+	sudo apt install -y build-essential cmake libsqlite3-dev libcurl4-openssl-dev
