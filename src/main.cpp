@@ -1,82 +1,11 @@
+#include "db/database.h"
 #include "pubchem.h"
 
 #include <curl/curl.h>
-#include <sqlite3.h>
 
 #include <chrono>
 #include <cstdio>
-#include <string>
 #include <vector>
-
-struct Candidate {
-    const char* name;
-    const char* pubchem_query;
-    const char* mechanism;
-    const char* evidence_note;
-};
-
-static bool exec_sql(sqlite3* db, const char* sql) {
-    char* err_msg = nullptr;
-    if (sqlite3_exec(db, sql, nullptr, nullptr, &err_msg) != SQLITE_OK) {
-        std::fprintf(stderr, "SQLite exec failed: %s\n", err_msg);
-        sqlite3_free(err_msg);
-        return false;
-    }
-
-    return true;
-}
-
-static bool bind_text(sqlite3_stmt* stmt, int index, const std::string& value) {
-    return sqlite3_bind_text(stmt, index, value.c_str(), -1, SQLITE_TRANSIENT) == SQLITE_OK;
-}
-
-static bool upsert_candidate(
-    sqlite3* db,
-    const Candidate& candidate,
-    const CompoundProperties& properties
-) {
-    const char* sql =
-        "INSERT INTO molecule_candidates ("
-        "name, pubchem_cid, title, canonical_smiles, molecular_formula, "
-        "molecular_weight, inchikey, mechanism, evidence_note, fetched_at"
-        ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) "
-        "ON CONFLICT(name) DO UPDATE SET "
-        "pubchem_cid = excluded.pubchem_cid, "
-        "title = excluded.title, "
-        "canonical_smiles = excluded.canonical_smiles, "
-        "molecular_formula = excluded.molecular_formula, "
-        "molecular_weight = excluded.molecular_weight, "
-        "inchikey = excluded.inchikey, "
-        "mechanism = excluded.mechanism, "
-        "evidence_note = excluded.evidence_note, "
-        "fetched_at = CURRENT_TIMESTAMP;";
-
-    sqlite3_stmt* stmt = nullptr;
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        std::fprintf(stderr, "SQLite prepare failed: %s\n", sqlite3_errmsg(db));
-        return false;
-    }
-
-    const bool ok =
-        bind_text(stmt, 1, candidate.name) &&
-        bind_text(stmt, 2, properties.cid) &&
-        bind_text(stmt, 3, properties.title) &&
-        bind_text(stmt, 4, properties.canonical_smiles) &&
-        bind_text(stmt, 5, properties.molecular_formula) &&
-        bind_text(stmt, 6, properties.molecular_weight) &&
-        bind_text(stmt, 7, properties.inchikey) &&
-        bind_text(stmt, 8, candidate.mechanism) &&
-        bind_text(stmt, 9, candidate.evidence_note);
-
-    if (!ok || sqlite3_step(stmt) != SQLITE_DONE) {
-        std::fprintf(stderr, "SQLite upsert failed: %s\n", sqlite3_errmsg(db));
-        sqlite3_finalize(stmt);
-        return false;
-    }
-
-    sqlite3_finalize(stmt);
-    return true;
-}
 
 int main() {
     using Clock = std::chrono::steady_clock;
@@ -85,28 +14,11 @@ int main() {
     const Clock::time_point start = Clock::now();
 
     sqlite3* db = nullptr;
-    if (sqlite3_open("data/machine.db", &db) != SQLITE_OK) {
-        std::fprintf(stderr, "SQLite open failed: %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
+    if (!open_database("data/machine.db", &db)) {
         return 1;
     }
 
-    const char* schema_sql =
-        "CREATE TABLE IF NOT EXISTS molecule_candidates ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "name TEXT NOT NULL UNIQUE,"
-        "pubchem_cid TEXT,"
-        "title TEXT,"
-        "canonical_smiles TEXT,"
-        "molecular_formula TEXT,"
-        "molecular_weight TEXT,"
-        "inchikey TEXT,"
-        "mechanism TEXT,"
-        "evidence_note TEXT,"
-        "fetched_at TEXT NOT NULL"
-        ");";
-
-    if (!exec_sql(db, schema_sql)) {
+    if (!initialize_schema(db)) {
         sqlite3_close(db);
         return 1;
     }
