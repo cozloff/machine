@@ -8,9 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(SQLite3 REQUIRED)
 find_package(CURL REQUIRED)
 
-add_executable(machine
-    src/main.cpp
-    src/pubchem.cpp
-    src/db/database.cpp
-)
+file(GLOB_RECURSE MACHINE_SOURCES CONFIGURE_DEPENDS src/*.cpp)
+
+add_executable(machine ${MACHINE_SOURCES})
+target_include_directories(machine PRIVATE src)
 target_link_libraries(machine PRIVATE SQLite::SQLite3 CURL::libcurl)
