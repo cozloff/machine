@@ -1,4 +1,4 @@
-#include "pubchem.h"
+#include <pubchem.h>
 
 #include <cstdio>
 #include <string>
@@ -103,7 +103,7 @@ bool parse_pubchem_csv(const std::string& csv, CompoundProperties* properties) {
     return true;
 }
 
-}  // namespace
+}
 
 bool fetch_pubchem_properties(
     CURL* curl,
