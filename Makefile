@@ -25,7 +25,7 @@ run:
 	$(COMPOSE) exec $(SERVICE) ./$(BUILD_DIR)/machine
 
 rebuild:
-	$(COMPOSE) exec $(SERVICE) sh -lc "cmake -S . -B $(BUILD_DIR) && cmake --build $(BUILD_DIR) && ./$(BUILD_DIR)/machine"
+	$(COMPOSE) exec $(SERVICE) sh -lc "cmake -E rm -rf $(BUILD_DIR) && cmake -S . -B $(BUILD_DIR) && cmake --build $(BUILD_DIR) && ./$(BUILD_DIR)/machine"
 
 logs:
 	$(COMPOSE) logs -f $(SERVICE)

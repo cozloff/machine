@@ -1,4 +1,5 @@
 #include <db/database.h>
+#include <gpu/gpu_test.h>
 #include <ingest_candidates.h>
 
 #include <curl/curl.h>
@@ -36,6 +37,8 @@ int main() {
 
     std::printf("Total ns: %lld\n", total_ns);
 
+    const bool gpu_ok = runGpuTest();
+
     sqlite3_close(db);
-    return ingested ? 0 : 1;
+    return ingested && gpu_ok ? 0 : 1;
 }

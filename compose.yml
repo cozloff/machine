@@ -4,6 +4,7 @@ services:
       context: .
       target: build
     working_dir: /workspace
+    gpus: all
     volumes:
       - .:/workspace
     command: sh -lc "mkdir -p build/container && tail -f /dev/null"
