@@ -1,15 +1,23 @@
-cmake_minimum_required(VERSION 3.10)
-project(machine)
+cmake_minimum_required(VERSION 3.18)
+project(machine LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 86 89)
+endif()
 
 find_package(SQLite3 REQUIRED)
 find_package(CURL REQUIRED)
 
 file(GLOB_RECURSE MACHINE_SOURCES CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB_RECURSE MACHINE_CUDA_SOURCES CONFIGURE_DEPENDS src/*.cu)
 
-add_executable(machine ${MACHINE_SOURCES})
+add_executable(machine ${MACHINE_SOURCES} ${MACHINE_CUDA_SOURCES})
 target_include_directories(machine PRIVATE src)
 target_link_libraries(machine PRIVATE SQLite::SQLite3 CURL::libcurl)
+set_target_properties(machine PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
