@@ -2,14 +2,10 @@
 
 #include <cuda_runtime.h>
 
+#include <cstddef>
 #include <cstdio>
 
 namespace {
-
-__global__ void addKernel(const int* a, const int* b, int* c) {
-    const int index = threadIdx.x;
-    c[index] = a[index] + b[index];
-}
 
 bool checkCuda(cudaError_t status, const char* operation) {
     if (status == cudaSuccess) {
@@ -20,20 +16,57 @@ bool checkCuda(cudaError_t status, const char* operation) {
     return false;
 }
 
+double bytesToGiB(std::size_t bytes) {
+    return static_cast<double>(bytes) / (1024.0 * 1024.0 * 1024.0);
+}
+
+double bytesToKiB(std::size_t bytes) {
+    return static_cast<double>(bytes) / 1024.0;
+}
+
+double theoreticalMemoryBandwidthGbps(const cudaDeviceProp& prop) {
+    const double memory_clock_hz = static_cast<double>(prop.memoryClockRate) * 1000.0;
+    const double bus_width_bytes = static_cast<double>(prop.memoryBusWidth) / 8.0;
+    return 2.0 * memory_clock_hz * bus_width_bytes / 1.0e9;
+}
+
+void printDeviceSpecs(int device_index, const cudaDeviceProp& prop) {
+    std::printf("CUDA GPU %d: %s\n", device_index, prop.name);
+    std::printf("  Compute capability: %d.%d\n", prop.major, prop.minor);
+    std::printf("  SMs: %d\n", prop.multiProcessorCount);
+    std::printf("  Max blocks per SM: %d\n", prop.maxBlocksPerMultiProcessor);
+    std::printf("  Max threads per SM: %d\n", prop.maxThreadsPerMultiProcessor);
+    std::printf("  Max threads per block: %d\n", prop.maxThreadsPerBlock);
+    std::printf("  Warp size: %d\n", prop.warpSize);
+    std::printf("  Max block dimensions: %d x %d x %d threads\n",
+                prop.maxThreadsDim[0],
+                prop.maxThreadsDim[1],
+                prop.maxThreadsDim[2]);
+    std::printf("  Max grid dimensions: %d x %d x %d blocks\n",
+                prop.maxGridSize[0],
+                prop.maxGridSize[1],
+                prop.maxGridSize[2]);
+    std::printf("  Global memory: %.2f GiB\n", bytesToGiB(prop.totalGlobalMem));
+    std::printf("  Memory type: not exposed by CUDA runtime API; reported here as device global memory\n");
+    std::printf("  Memory bus width: %d-bit\n", prop.memoryBusWidth);
+    std::printf("  Memory clock: %.2f GHz effective data-rate source clock\n",
+                static_cast<double>(prop.memoryClockRate) / 1000000.0);
+    std::printf("  Theoretical memory bandwidth: %.2f GB/s\n", theoreticalMemoryBandwidthGbps(prop));
+    std::printf("  L2 cache: %.2f KiB\n", bytesToKiB(prop.l2CacheSize));
+    std::printf("  Shared memory per block: %.2f KiB\n", bytesToKiB(prop.sharedMemPerBlock));
+    std::printf("  Shared memory per SM: %.2f KiB\n", bytesToKiB(prop.sharedMemPerMultiprocessor));
+    std::printf("  Registers per block: %d\n", prop.regsPerBlock);
+    std::printf("  Registers per SM: %d\n", prop.regsPerMultiprocessor);
+    std::printf("  Core clock: %.2f GHz\n", static_cast<double>(prop.clockRate) / 1000000.0);
+    std::printf("  Concurrent kernels: %s\n", prop.concurrentKernels ? "yes" : "no");
+    std::printf("  Async copy engines: %d\n", prop.asyncEngineCount);
+    std::printf("  Unified addressing: %s\n", prop.unifiedAddressing ? "yes" : "no");
+    std::printf("  Managed memory: %s\n", prop.managedMemory ? "yes" : "no");
+}
+
 }  // namespace
 
 bool runGpuTest() {
-    constexpr int value_count = 4;
-    constexpr int bytes = value_count * static_cast<int>(sizeof(int));
-
-    const int host_a[value_count] = {1, 2, 3, 4};
-    const int host_b[value_count] = {10, 20, 30, 40};
-    int host_c[value_count] = {};
-
-    int* device_a = nullptr;
-    int* device_b = nullptr;
-    int* device_c = nullptr;
-
     int device_count = 0;
     if (!checkCuda(cudaGetDeviceCount(&device_count), "device count")) {
         return false;
@@ -44,48 +77,18 @@ bool runGpuTest() {
         return false;
     }
 
-    if (!checkCuda(cudaMalloc(reinterpret_cast<void**>(&device_a), bytes), "allocate device_a") ||
-        !checkCuda(cudaMalloc(reinterpret_cast<void**>(&device_b), bytes), "allocate device_b") ||
-        !checkCuda(cudaMalloc(reinterpret_cast<void**>(&device_c), bytes), "allocate device_c")) {
-        cudaFree(device_a);
-        cudaFree(device_b);
-        cudaFree(device_c);
-        return false;
-    }
+    std::printf("CUDA device report: %d CUDA-capable device%s found\n",
+                device_count,
+                device_count == 1 ? "" : "s");
 
-    const bool copied =
-        checkCuda(cudaMemcpy(device_a, host_a, bytes, cudaMemcpyHostToDevice), "copy host_a") &&
-        checkCuda(cudaMemcpy(device_b, host_b, bytes, cudaMemcpyHostToDevice), "copy host_b");
-
-    if (!copied) {
-        cudaFree(device_a);
-        cudaFree(device_b);
-        cudaFree(device_c);
-        return false;
-    }
-
-    addKernel<<<1, value_count>>>(device_a, device_b, device_c);
-
-    const bool kernel_ok =
-        checkCuda(cudaGetLastError(), "launch addKernel") &&
-        checkCuda(cudaDeviceSynchronize(), "synchronize addKernel") &&
-        checkCuda(cudaMemcpy(host_c, device_c, bytes, cudaMemcpyDeviceToHost), "copy result");
-
-    cudaFree(device_a);
-    cudaFree(device_b);
-    cudaFree(device_c);
-
-    if (!kernel_ok) {
-        return false;
-    }
-
-    for (int i = 0; i < value_count; ++i) {
-        if (host_c[i] != host_a[i] + host_b[i]) {
-            std::fprintf(stderr, "CUDA GPU test failed: unexpected result at %d.\n", i);
+    for (int device_index = 0; device_index < device_count; ++device_index) {
+        cudaDeviceProp prop = {};
+        if (!checkCuda(cudaGetDeviceProperties(&prop, device_index), "device properties")) {
             return false;
         }
+
+        printDeviceSpecs(device_index, prop);
     }
 
-    std::printf("CUDA GPU test passed: [%d, %d, %d, %d]\n", host_c[0], host_c[1], host_c[2], host_c[3]);
     return true;
 }
