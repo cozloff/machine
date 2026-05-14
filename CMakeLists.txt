@@ -13,11 +13,12 @@ endif()
 
 find_package(SQLite3 REQUIRED)
 find_package(CURL REQUIRED)
+find_package(CLI11 CONFIG REQUIRED)
 
 file(GLOB_RECURSE MACHINE_SOURCES CONFIGURE_DEPENDS src/*.cpp)
 file(GLOB_RECURSE MACHINE_CUDA_SOURCES CONFIGURE_DEPENDS src/*.cu)
 
 add_executable(machine ${MACHINE_SOURCES} ${MACHINE_CUDA_SOURCES})
 target_include_directories(machine PRIVATE src)
-target_link_libraries(machine PRIVATE SQLite::SQLite3 CURL::libcurl)
+target_link_libraries(machine PRIVATE SQLite::SQLite3 CURL::libcurl CLI11::CLI11)
 set_target_properties(machine PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

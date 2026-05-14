@@ -4,6 +4,7 @@ RUN apt-get update \
         build-essential \
         ca-certificates \
         cmake \
+        libcli11-dev \
         libcurl4-openssl-dev \
         libsqlite3-dev \
     && rm -rf /var/lib/apt/lists/*

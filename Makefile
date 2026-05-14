@@ -3,6 +3,7 @@ SERVICE := machine-dev
 BUILD_DIR := build/container
 LOCAL_BUILD_DIR := /tmp/machine-build
 VCPKG_ROOT ?= C:/vcpkg
+ARGS ?=
 
 .PHONY: up down shell configure build run rebuild logs configure-local build-local deps-ubuntu
 
@@ -22,10 +23,10 @@ build:
 	$(COMPOSE) exec $(SERVICE) cmake --build $(BUILD_DIR)
 
 run:
-	$(COMPOSE) exec $(SERVICE) ./$(BUILD_DIR)/machine
+	$(COMPOSE) exec $(SERVICE) ./$(BUILD_DIR)/machine $(ARGS)
 
 rebuild:
-	$(COMPOSE) exec $(SERVICE) sh -lc "cmake -E rm -rf $(BUILD_DIR) && cmake -S . -B $(BUILD_DIR) && cmake --build $(BUILD_DIR) && ./$(BUILD_DIR)/machine"
+	$(COMPOSE) exec $(SERVICE) sh -lc "cmake -E rm -rf $(BUILD_DIR) && cmake -S . -B $(BUILD_DIR) && cmake --build $(BUILD_DIR) && ./$(BUILD_DIR)/machine $(ARGS)"
 
 logs:
 	$(COMPOSE) logs -f $(SERVICE)
