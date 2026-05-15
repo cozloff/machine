@@ -1,7 +1,7 @@
 #ifndef MACHINE_DB_DATABASE_H_
 #define MACHINE_DB_DATABASE_H_
 
-#include <pubchem.h>
+#include <ingest/pubchem.h>
 
 #include <sqlite3.h>
 

@@ -1,5 +1,8 @@
-#include <pubchem.h>
+#include <db/database.h>
+#include <ingest/ingest_candidates.h>
+#include <ingest/pubchem.h>
 
+#include <chrono>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -103,6 +106,45 @@ bool parse_pubchem_csv(const std::string& csv, CompoundProperties* properties) {
     return true;
 }
 
+}
+
+bool ingestPubChem() {
+    using Clock = std::chrono::steady_clock;
+    using Nanoseconds = std::chrono::nanoseconds;
+
+    const Clock::time_point start = Clock::now();
+
+    sqlite3* db = nullptr;
+    if (!open_database("data/machine.db", &db)) {
+        return false;
+    }
+
+    if (!initialize_schema(db)) {
+        sqlite3_close(db);
+        return false;
+    }
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    CURL* curl = curl_easy_init();
+    if (curl == nullptr) {
+        std::fprintf(stderr, "Failed to initialize curl.\n");
+        curl_global_cleanup();
+        sqlite3_close(db);
+        return false;
+    }
+
+    const bool ingested = ingestCandidates(db, curl);
+
+    curl_easy_cleanup(curl);
+    curl_global_cleanup();
+
+    const Clock::time_point end = Clock::now();
+    const long long total_ns = std::chrono::duration_cast<Nanoseconds>(end - start).count();
+
+    std::printf("Total ns: %lld\n", total_ns);
+
+    sqlite3_close(db);
+    return ingested;
 }
 
 bool fetch_pubchem_properties(

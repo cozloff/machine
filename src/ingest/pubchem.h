@@ -20,4 +20,6 @@ bool fetch_pubchem_properties(
     CompoundProperties* properties
 );
 
+bool ingestPubChem();
+
 #endif
