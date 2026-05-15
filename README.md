@@ -29,6 +29,8 @@ CLI App:
 make run ARGS="ingest"
 make run ARGS="gpu rho-guess"
 make run ARGS="gpu report"
+make run ARGS="data parquet create"
+make run ARGS="data parquet nvcomp"
 ```
 
 Change test 2
