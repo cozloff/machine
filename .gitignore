@@ -7,3 +7,11 @@
 .agents
 /data/machine.db
 /build
+
+
+# Added by cargo
+
+/target
+Carg.lock
+=======
+>>>>>>> main
