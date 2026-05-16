@@ -1,44 +1,59 @@
-#include <db/database.h>
+#include <data/compression/arrow_nvcomp.h>
 #include <gpu/gpu_test.h>
-#include <ingest_candidates.h>
+#include <gpu/rho_guesser.h>
+#include <ingest/pubchem.h>
 
-#include <curl/curl.h>
+#include <CLI/CLI.hpp>
 
-#include <chrono>
 #include <cstdio>
 
-int main() {
-    using Clock = std::chrono::steady_clock;
-    using Nanoseconds = std::chrono::nanoseconds;
+int main(int argc, char** argv) {
+    CLI::App app{"machine"};
+    app.require_subcommand(1, 1);
 
-    const Clock::time_point start = Clock::now();
+    CLI::App* ingest_cmd = app.add_subcommand("ingest", "Ingest candidate compounds from PubChem into sqlite.");
+    CLI::App* data_cmd = app.add_subcommand("data", "Run data file and compression helpers.");
+    data_cmd->require_subcommand(1, 1);
 
-    sqlite3* db = nullptr;
-    if (!open_database("data/machine.db", &db)) {
-        return 1;
+    CLI::App* parquet_cmd = data_cmd->add_subcommand("parquet", "Create and GPU-compress sample Parquet files.");
+    parquet_cmd->require_subcommand(1, 1);
+    CLI::App* parquet_create_cmd =
+        parquet_cmd->add_subcommand("create", "Create data/mock_arrow.parquet with Arrow's Parquet writer.");
+    CLI::App* parquet_nvcomp_cmd =
+        parquet_cmd->add_subcommand("nvcomp", "Compress and decompress data/mock_arrow.parquet with nvCOMP LZ4.");
+    CLI::App* gpu_cmd = app.add_subcommand("gpu", "Run CUDA helper commands.");
+    gpu_cmd->require_subcommand(1, 1);
+
+    CLI::App* gpu_report_cmd = gpu_cmd->add_subcommand("report", "Print CUDA device capabilities.");
+    CLI::App* rho_guess_cmd = gpu_cmd->add_subcommand("rho-guess", "Run the CUDA reciprocal-space rho guess demo.");
+
+    if (argc == 1) {
+        std::printf("%s", app.help().c_str());
+        return 0;
     }
 
-    if (!initialize_schema(db)) {
-        sqlite3_close(db);
-        return 1;
+    CLI11_PARSE(app, argc, argv);
+
+    if (ingest_cmd->parsed()) {
+        return ingestPubChem() ? 0 : 1;
     }
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    CURL* curl = curl_easy_init();
+    if (parquet_create_cmd->parsed()) {
+        return createMockArrowParquet() ? 0 : 1;
+    }
 
-    // Ingest candidates into sqlite database
-    const bool ingested = ingestCandidates(db, curl);
+    if (parquet_nvcomp_cmd->parsed()) {
+        return compressAndDecompressParquetWithNvcomp() ? 0 : 1;
+    }
 
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
+    if (gpu_report_cmd->parsed()) {
+        return runGpuTest() ? 0 : 1;
+    }
 
-    const Clock::time_point end = Clock::now();
-    const long long total_ns = std::chrono::duration_cast<Nanoseconds>(end - start).count();
+    if (rho_guess_cmd->parsed()) {
+        return runRhoGuessDemo() ? 0 : 1;
+    }
 
-    std::printf("Total ns: %lld\n", total_ns);
-
-    const bool gpu_ok = runGpuTest();
-
-    sqlite3_close(db);
-    return ingested && gpu_ok ? 0 : 1;
+    std::fprintf(stderr, "No command selected.\n");
+    return 1;
 }

@@ -1,0 +1,15 @@
+[package]
+name = "machine"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+console = "0.15"
+dialoguer = "0.11"
+indicatif = "0.17"
+colored = "2"
+
+[[bin]]
+name = "gum"
+path = "cli/main.rs"
