@@ -12,6 +12,4 @@
 # Added by cargo
 
 /target
-Carg.lock
-=======
->>>>>>> main
+Cargo.lock
