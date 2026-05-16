@@ -13,10 +13,3 @@
 
 /target
 Cargo.lock
-
-.history
-.terraform/
-*.tfstate
-*.tfstate.*
-*.tfvars
-!.tfvars.example

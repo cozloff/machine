@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 cmake_minimum_required(VERSION 3.18)
 project(machine LANGUAGES CXX CUDA)
 
@@ -39,10 +38,3 @@ target_link_libraries(machine PRIVATE
     ${NVCOMP_LIBRARY}
 )
 set_target_properties(machine PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-=======
->>>>>>> main
-cmake_minimum_required(VERSION 3.10)
-project(machine)
-
-set(CMAKE_CXX_STANDARD 17)
-add_executable(machine main.cpp)
