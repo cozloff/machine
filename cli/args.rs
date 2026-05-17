@@ -12,8 +12,10 @@ pub struct Cli {
 pub enum Commands {
     /// Run test workflows and terminal output examples
     Test(TestArgs),
-    /// Run machine workflows 
+    /// Run machine workflows
     Mach(MachineArgs),
+    /// Run Kubernetes workflows
+    Kube(KubernetesArgs),
 }
 
 #[derive(Args)]
@@ -84,4 +86,16 @@ pub enum ParquetCommand {
     Create,
     /// Run parquet compression test
     Nvcomp,
+}
+
+#[derive(Args)]
+pub struct KubernetesArgs {
+    #[command(subcommand)]
+    pub command: KubernetesCommand,
+}
+
+#[derive(Subcommand)]
+pub enum KubernetesCommand {
+    /// Start up minikube and deploy machine
+    Mini,
 }

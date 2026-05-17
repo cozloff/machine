@@ -1,7 +1,6 @@
 use crate::args::{MachineArgs, MachineCommand, ParquetArgs, ParquetCommand};
 use crate::commands::CommandResult;
-use std::io;
-use std::process::Command;
+use crate::services::cmd::run as cmd;
 
 pub fn run(args: MachineArgs) -> CommandResult {
     match args.command {
@@ -16,11 +15,11 @@ pub fn run(args: MachineArgs) -> CommandResult {
 }
 
 fn up() -> CommandResult {
-    run_command("docker", &["compose", "up", "-d", "--build"])
+    cmd("docker", &["compose", "up", "-d", "--build"])
 }
 
 fn down() -> CommandResult {
-    run_command("docker", &["compose", "down"])
+    cmd("docker", &["compose", "down"])
 }
 
 fn rebuild() -> CommandResult {
@@ -59,31 +58,13 @@ fn parquet_nvcomp() -> CommandResult {
 }
 
 fn run_container_machine(args: &[&str]) -> CommandResult {
-    let mut command_args = vec!["./build/container/machine"];
-    command_args.extend_from_slice(args);
-    run_compose_exec(&command_args)
+    let mut cmd_args = vec!["./build/container/machine"];
+    cmd_args.extend_from_slice(args);
+    run_compose_exec(&cmd_args)
 }
 
 fn run_compose_exec(args: &[&str]) -> CommandResult {
-    let mut command_args = vec!["compose", "exec", "machine-dev"];
-    command_args.extend_from_slice(args);
-    run_command("docker", &command_args)
-}
-
-fn run_command(program: &str, args: &[&str]) -> CommandResult {
-    let status = Command::new(program).args(args).status()?;
-
-    if status.success() {
-        return Ok(());
-    }
-
-    let command = std::iter::once(program)
-        .chain(args.iter().copied())
-        .collect::<Vec<_>>()
-        .join(" ");
-    Err(io::Error::new(
-        io::ErrorKind::Other,
-        format!("command failed with status {status}: {command}"),
-    )
-    .into())
+    let mut cmd_args = vec!["compose", "exec", "machine-dev"];
+    cmd_args.extend_from_slice(args);
+    cmd("docker", &cmd_args)
 }

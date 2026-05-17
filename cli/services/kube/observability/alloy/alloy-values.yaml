@@ -1,0 +1,65 @@
+controller:
+  type: daemonset
+  hostPID: true
+
+alloy:
+  securityContext:
+    privileged: true
+  envFrom:
+  - secretRef:
+      name: grafana-loki-org
+  mounts:
+    varlog: true
+    dockercontainers: true
+
+  configMap:
+    create: true
+    name: alloy-config
+    content: |-
+      // Discover pods on the same node
+      discovery.kubernetes "pods" {
+        role = "pod"
+        selectors {
+          role  = "pod"
+          field = "spec.nodeName=" + coalesce(sys.env("HOSTNAME"), constants.hostname)
+        }
+      }
+
+      // Optional relabeling to map K8s meta into Loki labels
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          action        = "replace"
+          target_label  = "namespace"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          action        = "replace"
+          target_label  = "pod"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          action        = "replace"
+          target_label  = "container"
+        }
+      }
+
+      // Actually scrape the logs
+      loki.source.kubernetes "pods" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.write.default.receiver]
+      }
+
+      // Push logs into Loki
+      loki.write "default" {
+        endpoint {
+          url = "http://loki-gateway.observability.svc.cluster.local/loki/api/v1/push"
+          headers = {
+            "X-Scope-OrgID" = sys.env("LOKI_SCOPE_ORG_ID"),
+          }
+        }
+      }
