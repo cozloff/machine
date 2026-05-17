@@ -4,7 +4,6 @@ use std::path::Path;
 
 pub trait Minikube {
     fn boot(&self) -> CommandResult;
-    #[allow(dead_code)]
     fn image_build(&self, tag: &str, dockerfile_dir: &Path) -> CommandResult;
 }
 
