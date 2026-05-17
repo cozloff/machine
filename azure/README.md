@@ -6,6 +6,8 @@ This creates:
 - one StorageV2 account
 - one private Blob container
 - one private Blob container for OpenTofu state
+- one Azure Key Vault with RBAC authorization enabled
+- one Key Vault Administrator role assignment for the current Azure principal
 
 ## Prerequisites
 

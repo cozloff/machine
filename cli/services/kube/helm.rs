@@ -9,6 +9,7 @@ pub trait Helm {
     fn ensure_repo(&self, name: &str, url: &str) -> CommandResult;
     fn install_chart(&self, name: &str, chart: &str, namespace: &str) -> CommandResult;
     fn release_exists(&self, release: &str, namespace: &str) -> bool;
+    #[allow(dead_code)]
     fn release_up_to_date(&self, release: &str, chart_name: &str) -> bool;
     fn install_or_upgrade(
         &self,

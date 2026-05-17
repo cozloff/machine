@@ -21,6 +21,7 @@ pub trait Kubectl {
         namespace: &str,
         literals: &HashMap<String, String>,
     ) -> CommandResult;
+    #[allow(dead_code)]
     fn rollout_restart(&self, resource: &str, namespace: &str) -> CommandResult;
 }
 

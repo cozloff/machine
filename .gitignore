@@ -5,6 +5,7 @@
 *.tfvars
 !.tfvars.example
 .agents
+.codex
 .env
 .env.*
 !.env.example

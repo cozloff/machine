@@ -18,62 +18,40 @@ provider "azurerm" {
   features {}
 }
 
-resource "random_string" "storage_suffix" {
-  length  = 8
-  upper   = false
-  special = false
-}
+data "azurerm_client_config" "current" {}
 
-locals {
-  storage_account_name = substr(
-    lower(replace("${var.storage_account_prefix}${random_string.storage_suffix.result}", "-", "")),
-    0,
-    24
-  )
-}
+module "resource_group" {
+  source = "./modules/resource_group"
 
-resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
-
-  tags = var.tags
+  tags     = var.tags
 }
 
-resource "azurerm_storage_account" "this" {
-  name                            = local.storage_account_name
-  resource_group_name             = azurerm_resource_group.this.name
-  location                        = azurerm_resource_group.this.location
-  account_tier                    = "Standard"
-  account_replication_type        = "LRS"
-  account_kind                    = "StorageV2"
-  access_tier                     = "Hot"
-  min_tls_version                 = "TLS1_2"
-  allow_nested_items_to_be_public = false
-  public_network_access_enabled   = true
+module "storage" {
+  source = "./modules/storage"
 
-  blob_properties {
-    versioning_enabled = true
-
-    delete_retention_policy {
-      days = 7
-    }
-
-    container_delete_retention_policy {
-      days = 7
-    }
-  }
-
-  tags = var.tags
+  resource_group_name    = module.resource_group.name
+  location               = module.resource_group.location
+  storage_account_prefix = var.storage_account_prefix
+  container_name         = var.container_name
+  state_container_name   = var.state_container_name
+  tags                   = var.tags
 }
 
-resource "azurerm_storage_container" "this" {
-  name                  = var.container_name
-  storage_account_id    = azurerm_storage_account.this.id
-  container_access_type = "private"
-}
+module "key_vault" {
+  source = "./modules/key_vault"
 
-resource "azurerm_storage_container" "state" {
-  name                  = var.state_container_name
-  storage_account_id    = azurerm_storage_account.this.id
-  container_access_type = "private"
+  name                       = var.key_vault_name
+  name_prefix                = var.key_vault_name_prefix
+  resource_group_name        = module.resource_group.name
+  location                   = module.resource_group.location
+  tenant_id                  = data.azurerm_client_config.current.tenant_id
+  current_principal_id       = data.azurerm_client_config.current.object_id
+  sku_name                   = var.key_vault_sku_name
+  purge_protection_enabled   = var.key_vault_purge_protection_enabled
+  soft_delete_retention_days = var.key_vault_soft_delete_retention_days
+  public_network_access      = var.key_vault_public_network_access
+  network_acls               = var.key_vault_network_acls
+  tags                       = var.tags
 }

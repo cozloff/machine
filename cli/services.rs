@@ -1,4 +1,5 @@
 pub mod cmd;
+pub mod creds;
 pub mod env;
 pub mod kube;
 

@@ -16,6 +16,8 @@ pub enum Commands {
     Mach(MachineArgs),
     /// Run Kubernetes workflows
     Kube(KubernetesArgs),
+    /// Run credential management workflows
+    Creds(CredsArgs),
 }
 
 #[derive(Args)]
@@ -98,4 +100,16 @@ pub struct KubernetesArgs {
 pub enum KubernetesCommand {
     /// Start up minikube and deploy machine
     Mini,
+}
+
+#[derive(Args)]
+pub struct CredsArgs {
+    #[command(subcommand)]
+    pub command: CredsCommand,
+}
+
+#[derive(Subcommand)]
+pub enum CredsCommand {
+    /// Create .env file with creds from az login
+    Env,
 }

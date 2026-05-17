@@ -3,3 +3,17 @@ location               = "westus2"
 storage_account_prefix = "machinestore"
 container_name         = "data"
 state_container_name   = "tfstate"
+
+# Leave null to generate a globally unique Key Vault name from key_vault_name_prefix.
+key_vault_name                       = null
+key_vault_name_prefix                = "kvmachine"
+key_vault_sku_name                   = "standard"
+key_vault_purge_protection_enabled   = false
+key_vault_soft_delete_retention_days = 7
+key_vault_public_network_access      = true
+key_vault_network_acls = {
+  bypass                     = "AzureServices"
+  default_action             = "Allow"
+  ip_rules                   = []
+  virtual_network_subnet_ids = []
+}
