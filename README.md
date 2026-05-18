@@ -49,9 +49,7 @@ sqlite3 data/machine.db
 ## Windows Dependencies
 
 ```bash
-choco install cmake
-choco install make
-make deps-windows
+choco install rust
 ```
 
 The Windows dependency helper still lives in the Makefile. The day-to-day
