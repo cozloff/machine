@@ -17,5 +17,6 @@
 
 /target
 /api/target
+/sim/target
 
 Cargo.lock
