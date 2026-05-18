@@ -1,0 +1,9 @@
+/home/cozloff/Projects/machine/api/target/debug/deps/diesel_migrations-9acdbb6dce10670f.d: /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/lib.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/embedded_migrations.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/errors.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/file_based_migrations.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/migration_harness.rs
+
+/home/cozloff/Projects/machine/api/target/debug/deps/libdiesel_migrations-9acdbb6dce10670f.rmeta: /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/lib.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/embedded_migrations.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/errors.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/file_based_migrations.rs /home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/migration_harness.rs
+
+/home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/lib.rs:
+/home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/embedded_migrations.rs:
+/home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/errors.rs:
+/home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/file_based_migrations.rs:
+/home/cozloff/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diesel_migrations-2.3.2/src/migration_harness.rs:

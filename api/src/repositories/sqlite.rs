@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use rusqlite::Connection;
+use sea_orm::{Database, DatabaseConnection, DbErr};
 
 #[derive(Clone, Debug)]
 pub struct SqliteDatabase {
@@ -16,8 +16,8 @@ impl SqliteDatabase {
         Self::new(default_population_database_path())
     }
 
-    pub fn connect(&self) -> rusqlite::Result<Connection> {
-        Connection::open(&self.path)
+    pub async fn connect(&self) -> Result<DatabaseConnection, DbErr> {
+        Database::connect(format!("sqlite://{}?mode=rwc", self.path.to_string_lossy())).await
     }
 
     pub fn path(&self) -> &Path {

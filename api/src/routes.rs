@@ -1,3 +1,4 @@
+use crate::handlers::inflation::{all_inflation, latest_inflation, latest_inflation_rate};
 use crate::handlers::population::{
     all_population, latest_population, latest_population_total, save_all_population,
 };
@@ -17,4 +18,7 @@ pub fn create_router() -> Router {
             "/population/{country_code}/total",
             get(latest_population_total),
         )
+        .route("/inflation", get(all_inflation))
+        .route("/inflation/{country_code}", get(latest_inflation))
+        .route("/inflation/{country_code}/rate", get(latest_inflation_rate))
 }
