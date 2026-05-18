@@ -9,11 +9,13 @@
 .env
 .env.*
 !.env.example
-/data/machine.db
+/data/population.sqlite
 /build
 
 
 # Added by cargo
 
 /target
+/api/target
+
 Cargo.lock
