@@ -16,4 +16,6 @@
 # Added by cargo
 
 /target
+/api/target
+
 Cargo.lock
