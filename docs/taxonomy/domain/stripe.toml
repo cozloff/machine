@@ -1,0 +1,171 @@
+[domain.stripe]
+semantic = "financial infrastructure platform within business operations"
+
+[domain.stripe.symbols]
+fi = { id = "FinancialInfrastructure", semantic = "systems that move, store, verify, account for, and report money" }
+psp = { id = "PaymentServiceProvider", semantic = "network-facing payment acceptance layer" }
+stripe = { id = "Stripe", semantic = "financial infrastructure platform implementation" }
+revops = { id = "RevenueOperations", semantic = "business subsystem that manages revenue lifecycle" }
+finops = { id = "FinanceOperations", semantic = "business subsystem that manages accounting, cash, tax, and controls" }
+platformops = { id = "PlatformOperations", semantic = "business subsystem that embeds payments or financial services for users" }
+
+[domain.stripe.structure.superset_graph]
+kind = "directed_graph"
+description = "what supersedes Stripe from a high-level service taxonomy"
+uses = "domain.stripe.symbols"
+
+adjacency = [
+  ["fi", ["psp", "stripe", "revops", "finops", "platformops"]],
+  ["psp", ["stripe"]],
+  ["stripe", ["revops", "finops", "platformops"]]
+]
+
+[domain.stripe.service_symbols]
+pay = { id = "Payments", semantic = "online and programmatic payment acceptance" }
+checkout = { id = "Checkout", semantic = "hosted payment experience" }
+plink = { id = "PaymentLinks", semantic = "no-code payable object creation" }
+terminal = { id = "Terminal", semantic = "in-person payment acceptance" }
+billing = { id = "Billing", semantic = "subscriptions, invoices, pricing, and recurring revenue" }
+tax = { id = "Tax", semantic = "sales tax and VAT calculation and reporting support" }
+recrec = { id = "RevenueRecognition", semantic = "accrual accounting automation for revenue" }
+sigma = { id = "Sigma", semantic = "custom financial and operational reporting" }
+data = { id = "DataPipeline", semantic = "warehouse sync for Stripe data" }
+radar = { id = "Radar", semantic = "fraud and risk management" }
+connect = { id = "Connect", semantic = "marketplace and platform payment routing" }
+identity = { id = "Identity", semantic = "online identity verification" }
+finconn = { id = "FinancialConnections", semantic = "linked bank account data access" }
+issuing = { id = "Issuing", semantic = "card creation and card program operations" }
+fina = { id = "FinancialAccounts", semantic = "financial accounts for platforms" }
+capital = { id = "Capital", semantic = "business financing" }
+crypto = { id = "Crypto", semantic = "crypto and stablecoin payment infrastructure" }
+atlas = { id = "Atlas", semantic = "startup incorporation and company formation" }
+climate = { id = "Climate", semantic = "carbon removal contribution workflow" }
+
+[domain.stripe.structure.service_graph]
+kind = "directed_graph"
+description = "Stripe service family graph from financial infrastructure down to service modules"
+uses = "domain.stripe.service_symbols"
+
+adjacency = [
+  ["pay", ["checkout", "plink", "terminal", "radar"]],
+  ["billing", ["tax", "recrec", "sigma", "data"]],
+  ["connect", ["identity", "finconn", "fina", "issuing"]],
+  ["fina", ["capital"]],
+  ["stripe", ["pay", "billing", "connect", "crypto", "atlas", "climate"]]
+]
+
+[domain.stripe.business_operation_symbols]
+qi = { id = "QuoteIntake", semantic = "capture customer request" }
+qv = { id = "QuoteValidation", semantic = "check completeness and feasibility" }
+pmc = { id = "PricingMarginCheck", semantic = "estimate price, cost, risk, and margin" }
+qa = { id = "QuoteApproval", semantic = "authorize quote" }
+plc = { id = "PaymentLinkCreation", semantic = "create payable object" }
+oc = { id = "OrderConversion", semantic = "turn payment into work order" }
+rec = { id = "Reconciliation", semantic = "match payments, payouts, invoices, and accounting records" }
+
+[domain.stripe.structure.quote_to_cash_fit_graph]
+kind = "directed_graph"
+description = "where Stripe services fit into quote-to-cash operations"
+uses_symbols = "domain.stripe.business_operation_symbols"
+uses_services = "domain.stripe.service_symbols"
+
+adjacency = [
+  ["qi", ["checkout", "plink"]],
+  ["qv", ["identity", "finconn", "radar"]],
+  ["pmc", ["billing", "tax"]],
+  ["qa", ["billing"]],
+  ["plc", ["plink", "checkout", "pay"]],
+  ["oc", ["pay", "billing", "connect"]],
+  ["rec", ["recrec", "sigma", "data"]]
+]
+
+[domain.stripe.financial_infrastructure_symbols]
+acceptance = { id = "PaymentAcceptance", semantic = "card, wallet, and local payment method acceptance" }
+acquiring = { id = "MerchantAcquiring", semantic = "merchant settlement and network acquiring" }
+pos = { id = "PointOfSale", semantic = "in-person payment hardware and software" }
+payouts = { id = "Payouts", semantic = "disburse funds to sellers, workers, suppliers, or users" }
+bank_payments = { id = "BankPayments", semantic = "ACH, direct debit, open banking, RTP, FedNow, and account-to-account payments" }
+open_banking = { id = "OpenBankingData", semantic = "permissioned bank account, balance, identity, and transaction data" }
+embedded_banking = { id = "EmbeddedBanking", semantic = "accounts, cards, and money movement embedded inside software products" }
+card_issuing = { id = "CardIssuing", semantic = "physical, virtual, debit, prepaid, charge, or credit card programs" }
+ledger = { id = "Ledgering", semantic = "double-entry financial state and money movement truth" }
+treasury = { id = "TreasuryOperations", semantic = "cash visibility, bank connectivity, approvals, and payment operations" }
+fraud = { id = "FraudRisk", semantic = "payment fraud, account takeover, dispute, and transaction risk controls" }
+identity_risk = { id = "IdentityRisk", semantic = "KYC, KYB, AML, sanctions, onboarding, and ongoing monitoring" }
+billing_ops = { id = "BillingOperations", semantic = "subscriptions, invoices, usage metering, and dunning" }
+tax_ops = { id = "TaxOperations", semantic = "sales tax, VAT, nexus, exemption, and filing workflows" }
+revrec_ops = { id = "RevenueAccounting", semantic = "revenue recognition, reconciliation, and close support" }
+spend_ops = { id = "SpendManagement", semantic = "corporate cards, expense controls, procurement, and bill pay" }
+cross_border = { id = "CrossBorderMoneyMovement", semantic = "multi-currency payment, payout, and foreign exchange services" }
+crypto_rails = { id = "CryptoStablecoinRails", semantic = "wallet, stablecoin, on-ramp, off-ramp, and blockchain settlement infrastructure" }
+orchestration = { id = "PaymentOrchestration", semantic = "routing, vaulting, fallback, tokenization, and processor abstraction" }
+
+[domain.stripe.third_party_provider_symbols]
+adyen = { id = "Adyen", semantic = "global payments, acquiring, platforms, issuing, accounts, capital, and payouts" }
+paypal = { id = "PayPalBraintree", semantic = "enterprise payments, wallets, card processing, risk, and global payouts" }
+square = { id = "Square", semantic = "merchant payments, point of sale, invoices, subscriptions, and seller operations" }
+checkoutcom = { id = "CheckoutCom", semantic = "global payment processing, acquiring, risk, payout, and issuing infrastructure" }
+worldpay = { id = "Worldpay", semantic = "merchant acquiring and payment processing" }
+fiserv = { id = "Fiserv", semantic = "merchant acquiring, payment processing, banking, and financial technology services" }
+globalpay = { id = "GlobalPayments", semantic = "merchant acquiring, issuer solutions, and commerce infrastructure" }
+plaid = { id = "Plaid", semantic = "open banking data, account verification, risk signals, and bank payments" }
+gocardless = { id = "GoCardless", semantic = "bank debit, recurring bank payments, and open banking payments" }
+dwolla = { id = "Dwolla", semantic = "ACH and account-to-account money movement API" }
+modern_treasury = { id = "ModernTreasury", semantic = "payment operations, ledgers, reconciliation, bank rails, and stablecoin orchestration" }
+unit = { id = "Unit", semantic = "embedded banking accounts, cards, payments, and lending infrastructure" }
+treasury_prime = { id = "TreasuryPrime", semantic = "embedded banking software connecting banks and fintech programs" }
+synctera = { id = "Synctera", semantic = "banking as a service platform for accounts, cards, payments, and compliance" }
+marqeta = { id = "Marqeta", semantic = "modern card issuing and transaction processing" }
+lithic = { id = "Lithic", semantic = "card issuing, processor, ledgering, and program management infrastructure" }
+galileo = { id = "Galileo", semantic = "card issuing, digital banking, payments, and financial technology processing" }
+alloy = { id = "Alloy", semantic = "identity decisioning, fraud, KYC, KYB, AML, and compliance orchestration" }
+persona = { id = "Persona", semantic = "identity verification, KYC, KYB, and onboarding workflows" }
+trulioo = { id = "Trulioo", semantic = "global identity verification, business verification, KYC, KYB, and AML" }
+sardine = { id = "Sardine", semantic = "fraud prevention, AML, device risk, transaction monitoring, and payments risk" }
+sift = { id = "Sift", semantic = "digital fraud prevention, payment protection, account defense, and dispute risk" }
+avalara = { id = "Avalara", semantic = "tax calculation, compliance, exemption, and filing automation" }
+anrok = { id = "Anrok", semantic = "sales tax and VAT automation for software and digital products" }
+chargebee = { id = "Chargebee", semantic = "subscription billing, usage billing, invoicing, and revenue workflows" }
+recurly = { id = "Recurly", semantic = "subscription management, recurring billing, and churn recovery" }
+zuora = { id = "Zuora", semantic = "enterprise subscription billing, revenue, and monetization platform" }
+quickbooks = { id = "QuickBooks", semantic = "small business accounting, invoicing, payments, payroll, and books" }
+netsuite = { id = "NetSuite", semantic = "ERP, financial accounting, order management, billing, and revenue management" }
+xero = { id = "Xero", semantic = "small business accounting, invoices, bank feeds, and reconciliation" }
+ramp = { id = "Ramp", semantic = "corporate cards, expense management, bill pay, procurement, and treasury workflows" }
+brex = { id = "Brex", semantic = "corporate cards, spend management, travel, reimbursements, and business accounts" }
+wise = { id = "Wise", semantic = "cross-border payments, multi-currency accounts, and international money movement" }
+airwallex = { id = "Airwallex", semantic = "global accounts, cards, payments, payouts, and FX infrastructure" }
+circle = { id = "Circle", semantic = "USDC, stablecoin payments, wallets, and programmable money infrastructure" }
+coinbase = { id = "Coinbase", semantic = "crypto exchange, wallets, payments, custody, and on-ramp infrastructure" }
+spreedly = { id = "Spreedly", semantic = "payment orchestration, vaulting, tokenization, and processor routing" }
+primer = { id = "Primer", semantic = "payment orchestration, checkout, routing, and workflow automation" }
+gr4vy = { id = "Gr4vy", semantic = "cloud payment orchestration and processor abstraction" }
+
+[domain.stripe.structure.financial_infrastructure_landscape_graph]
+kind = "directed_graph"
+description = "third-party financial services landscape under financial infrastructure"
+uses_categories = "domain.stripe.financial_infrastructure_symbols"
+uses_providers = "domain.stripe.third_party_provider_symbols"
+
+adjacency = [
+  ["fi", ["acceptance", "acquiring", "pos", "payouts", "bank_payments", "open_banking", "embedded_banking", "card_issuing", "ledger", "treasury", "fraud", "identity_risk", "billing_ops", "tax_ops", "revrec_ops", "spend_ops", "cross_border", "crypto_rails", "orchestration"]],
+  ["acceptance", ["stripe", "adyen", "paypal", "square", "checkoutcom", "worldpay", "fiserv", "globalpay"]],
+  ["acquiring", ["stripe", "adyen", "checkoutcom", "worldpay", "fiserv", "globalpay"]],
+  ["pos", ["stripe", "adyen", "square", "fiserv"]],
+  ["payouts", ["stripe", "adyen", "paypal", "checkoutcom", "wise", "airwallex", "modern_treasury"]],
+  ["bank_payments", ["stripe", "plaid", "gocardless", "dwolla", "modern_treasury", "adyen"]],
+  ["open_banking", ["plaid", "gocardless", "stripe"]],
+  ["embedded_banking", ["stripe", "adyen", "unit", "treasury_prime", "synctera", "modern_treasury"]],
+  ["card_issuing", ["stripe", "adyen", "marqeta", "lithic", "galileo", "checkoutcom", "unit", "airwallex"]],
+  ["ledger", ["modern_treasury", "lithic", "stripe", "unit"]],
+  ["treasury", ["modern_treasury", "ramp", "brex", "airwallex", "wise"]],
+  ["fraud", ["stripe", "adyen", "paypal", "checkoutcom", "alloy", "sardine", "sift"]],
+  ["identity_risk", ["stripe", "plaid", "alloy", "persona", "trulioo", "sardine"]],
+  ["billing_ops", ["stripe", "chargebee", "recurly", "zuora", "quickbooks", "netsuite"]],
+  ["tax_ops", ["stripe", "avalara", "anrok", "netsuite"]],
+  ["revrec_ops", ["stripe", "chargebee", "zuora", "quickbooks", "netsuite", "xero"]],
+  ["spend_ops", ["ramp", "brex", "airwallex", "stripe"]],
+  ["cross_border", ["wise", "airwallex", "paypal", "adyen", "checkoutcom", "stripe"]],
+  ["crypto_rails", ["stripe", "circle", "coinbase", "modern_treasury"]],
+  ["orchestration", ["spreedly", "primer", "gr4vy", "stripe", "checkoutcom"]]
+]

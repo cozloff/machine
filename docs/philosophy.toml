@@ -5,7 +5,7 @@ thesis = "Agents persist by selecting policies across physical, informational, a
 [syntax]
 toml = "structure"
 ascii_math = "abstraction"
-python = "execution"
+rust = "execution"
 diagram = "composition"
 
 [syntax.kernel]
@@ -26,7 +26,7 @@ symbol = "field_state"
 transform = "physical_law"
 structure = "state_space"
 ascii_math = "psi_t -> U(psi_t) -> psi_t+1"
-python = "state = evolve(state, law)"
+rust = "state = evolve(state, law)"
 meaning = "No mysticism: substrate is constraint."
 
 [layer.1_physical_form]
@@ -34,7 +34,7 @@ symbol = "matter|energy|part|machine"
 transform = "heat|force|deform|manufacture"
 structure = "physical_system"
 ascii_math = "material + process -> part"
-python = "part = manufacture(material, process)"
+rust = "part = manufacture(material, process)"
 meaning = "Physics becomes cost, tolerance, throughput."
 
 [layer.2_information]
@@ -42,7 +42,7 @@ symbol = "measurement|dataset|document|embedding"
 transform = "observe|encode|predict|compress"
 structure = "information_state"
 ascii_math = "world -> measure -> data -> encode -> vector"
-python = "x = embed(observation)"
+rust = "x = embed(observation)"
 meaning = "Knowledge is not truth; it is usable state."
 
 [layer.3_boundary]
@@ -50,7 +50,7 @@ symbol = "agent_boundary"
 transform = "sense|filter|act"
 structure = "markov_boundary"
 ascii_math = "outside -> boundary -> inside"
-python = "belief = update(observation)"
+rust = "belief = update(observation)"
 meaning = "A self is a controlled interface."
 
 [layer.4_agent]
@@ -58,7 +58,7 @@ symbol = "agent|firm|machine|model"
 transform = "decide|act|learn"
 structure = "policy_loop"
 ascii_math = "S_t -> policy -> A_t -> S_t+1"
-python = "action = policy(state)"
+rust = "action = policy(state)"
 meaning = "Agency is persistence through action."
 
 [layer.5_network]
@@ -66,7 +66,7 @@ symbol = "customer|supplier|vendor|lender|market"
 transform = "trade|supply|price|finance"
 structure = "graph"
 ascii_math = "G=(V,E); firm -> supplier -> customer"
-python = "G.add_edge(firm, supplier)"
+rust = "G.add_edge(firm, supplier)"
 meaning = "Networks decide what actions are reachable."
 
 [layer.6_currency]
@@ -74,7 +74,7 @@ symbol = "cash|credit|price|optionality"
 transform = "pay|borrow|price|allocate"
 structure = "survival_constraint"
 ascii_math = "cash_t + inflow - outflow -> cash_t+1"
-python = "runway = cash / burn"
+rust = "runway = cash / burn"
 meaning = "Currency is persistence-time."
 
 [layer.7_policy]
@@ -82,7 +82,7 @@ symbol = "risk_adjusted_action"
 transform = "choose|quote|finance|allocate"
 structure = "decision_surface"
 ascii_math = "policy = argmax_a EV(a)-risk(a)"
-python = "quote = optimize(job, simulations)"
+rust = "quote = optimize(job, simulations)"
 meaning = "Policy is consequence selection."
 
 [moat]

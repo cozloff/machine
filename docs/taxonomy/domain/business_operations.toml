@@ -17,11 +17,7 @@ kind = "directed_graph"
 description = "business taxonomy graph"
 uses = "domain.business_operations.symbols"
 
-adjacency = [
-  { from = "bo", to = ["revops"] },
-  { from = "revops", to = ["qtc"] },
-  { from = "qtc", to = ["qi", "qv", "pmc", "qa", "plc", "oc"] },
-]
+adjacency = [["bo", ["revops"]], ["revops", ["qtc"]], ["qtc", ["qi", "qv", "pmc", "qa", "plc", "oc"]]]
 
 [domain.business_operations.pipeline_symbols]
 ci = { id = "CustomerIntent", semantic = "customer intent" }
@@ -47,10 +43,7 @@ uses_symbols = "domain.business_operations.pipeline_symbols"
 uses_transforms = "domain.business_operations.pipeline_transforms"
 
 adjacency = [
-  { from = "ci", to = ["qr"], transform = "intake" },
-  { from = "qr", to = ["vqr"], transform = "validate" },
-  { from = "vqr", to = ["pq"], transform = "price" },
-  { from = "pq", to = ["aq"], transform = "approve" },
-  { from = "aq", to = ["pl"], transform = "create_payment_link" },
-  { from = "pl", to = ["o"], transform = "convert_order" }
+  ["ci", ["qr"], "intake"], ["qr", ["vqr"], "validate"], ["vqr", ["pq"], "price"],
+  ["pq", ["aq"], "approve"], ["aq", ["pl"], "create_payment_link"],
+  ["pl", ["o"], "convert_order"]
 ]

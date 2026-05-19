@@ -18,9 +18,7 @@ description = "representation layer dependency graph"
 uses = "fn.layers"
 
 adjacency = [
-  { from = "toml", to = ["ascii_math", "rust", "diagram"] },
-  { from = "ascii_math", to = ["diagram"] },
-  { from = "rust", to = ["diagram"] },
+    ["toml", ["ascii_math", "rust", "diagram"]], ["ascii_math", ["diagram"]], ["rust", ["diagram"]]
 ]
 
 [fn.representation_symbols]
@@ -45,11 +43,8 @@ uses_symbols = "fn.representation_symbols"
 uses_transforms = "fn.representation_transforms"
 
 adjacency = [
-  { from = "obj", to = ["st", "val"], transform = "type" },
-  { from = "st", to = ["op"], transform = "name" },
-  { from = "op", to = ["st"], transform = "execute" },
-  { from = "fnc", to = ["fnc"], transform = "compose" },
-  { from = "gph", to = ["obj", "op"], transform = "visualize" },
+  ["obj", ["st", "val"], "type"], ["st", ["op"], "name"], ["op", ["st"], "execute"], 
+  ["fnc", ["fnc"], "compose"], ["gph", ["obj", "op"], "visualize"]
 ]
 
 [fn.rust_patterns]
@@ -73,11 +68,10 @@ description = "valid syntax policy graph"
 uses = "fn.rules.syntax"
 
 adjacency = [
-  { from = "section_names", to = ["symbol_keys"] },
-  { from = "symbol_keys", to = ["ids", "transforms"] },
-  { from = "ids", to = ["edges"] },
-  { from = "transforms", to = ["edges"] },
+    ["section_names", ["symbol_keys"]], ["symbol_keys", ["ids", "transforms"]], 
+    ["ids", ["edges"]], ["transforms", ["edges"]]
 ]
+
 
 [fn.ascii_math]
 semantic = "compact symbolic notation for algebra, calculus, and formal relationships"
