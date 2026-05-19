@@ -1,0 +1,56 @@
+[domain.business_operations]
+semantic = "organization of repeatable work inside a business"
+
+[domain.business_operations.symbols]
+bo = { id = "BusinessOperations", semantic = "system" }
+revops = { id = "RevenueOperations", semantic = "subsystem" }
+qtc = { id = "QuoteToCash", semantic = "business process" }
+qi = { id = "QuoteIntake", semantic = "capture customer request" }
+qv = { id = "QuoteValidation", semantic = "check completeness and feasibility" }
+pmc = { id = "PricingMarginCheck", semantic = "estimate price, cost, risk, and margin" }
+qa = { id = "QuoteApproval", semantic = "authorize quote" }
+plc = { id = "PaymentLinkCreation", semantic = "create payable object" }
+oc = { id = "OrderConversion", semantic = "turn payment into work order" }
+
+[domain.business_operations.structure.hierarchy_graph]
+kind = "directed_graph"
+description = "business taxonomy graph"
+uses = "domain.business_operations.symbols"
+
+adjacency = [
+  { from = "bo", to = ["revops"] },
+  { from = "revops", to = ["qtc"] },
+  { from = "qtc", to = ["qi", "qv", "pmc", "qa", "plc", "oc"] },
+]
+
+[domain.business_operations.pipeline_symbols]
+ci = { id = "CustomerIntent", semantic = "customer intent" }
+qr = { id = "QuoteRequest", semantic = "customer request object" }
+vqr = { id = "ValidatedQuoteRequest", semantic = "validated request state" }
+pq = { id = "PricedQuote", semantic = "priced commercial offer" }
+aq = { id = "ApprovedQuote", semantic = "authorized offer" }
+pl = { id = "PaymentLink", semantic = "payable currency object" }
+o = { id = "Order", semantic = "converted work commitment" }
+
+[domain.business_operations.pipeline_transforms]
+intake = { id = "intake", semantic = "capture quote request" }
+validate = { id = "validate", semantic = "check completeness and feasibility" }
+price = { id = "price", semantic = "estimate cost, risk, and margin" }
+approve = { id = "approve", semantic = "authorize quote for customer" }
+create_payment_link = { id = "create_payment_link", semantic = "create payable object" }
+convert_order = { id = "convert_order", semantic = "turn payment into work order" }
+
+[domain.business_operations.structure.pipeline_graph]
+kind = "directed_graph"
+description = "quote-to-cash state transition graph"
+uses_symbols = "domain.business_operations.pipeline_symbols"
+uses_transforms = "domain.business_operations.pipeline_transforms"
+
+adjacency = [
+  { from = "ci", to = ["qr"], transform = "intake" },
+  { from = "qr", to = ["vqr"], transform = "validate" },
+  { from = "vqr", to = ["pq"], transform = "price" },
+  { from = "pq", to = ["aq"], transform = "approve" },
+  { from = "aq", to = ["pl"], transform = "create_payment_link" },
+  { from = "pl", to = ["o"], transform = "convert_order" }
+]
