@@ -1,0 +1,161 @@
+[2_information.rust_kernel]
+type = "information_execution_layer"
+claim = "Rust is the typed conductor between information and physics."
+thesis = "abstract_policy -> compiled_boundary -> physical_consequence"
+
+[notation.prefix]
+K = "kernel"
+1_physical_form = "physics"
+INF = "information"
+MFG = "manufacturing"
+OWN = "ownership"
+POL = "policy"
+EXE = "execution"
+ERR = "failure"
+CUR = "currency"
+
+[1_physical_form.substrate]
+symbol = "field|energy|force|heat|vibration"
+transform = "law|flow|dissipate|couple"
+structure = "state_space"
+ascii_math = "psi_t -> U_t(psi_t) -> psi_t+1"
+rust_form = "State -> Evolution -> State"
+meaning = "physics is constraint without mythology"
+
+[1_physical_form.boundary]
+symbol = "mass|latency|friction|wear|thermal_drift"
+transform = "limit|delay|decay|distort"
+structure = "constraint_surface"
+ascii_math = "x_t + disturbance -> x_t+1"
+rust_form = "PhysicalState -> Disturbance -> PhysicalState"
+meaning = "every action pays physics"
+
+[2_information.measurement]
+symbol = "sensor|reading|calibration|error_map"
+transform = "observe|sample|filter|estimate"
+structure = "measurement_channel"
+ascii_math = "1_physical_form -> y_t -> x_hat_t"
+rust_form = "SensorReading -> Estimate"
+meaning = "measurement is physics entering notation"
+
+[2_information.encoding]
+symbol = "data|feature|embedding|belief"
+transform = "encode|compress|infer|update"
+structure = "information_state"
+ascii_math = "y_t -> encode(y_t) -> z_t"
+rust_form = "Reading -> FeatureVector"
+meaning = "information is compressed consequence"
+
+[2_information.manufacture.process]
+symbol = "material|tool|machine|part|tolerance"
+transform = "cut|polish|etch|align|assemble"
+structure = "process_route"
+ascii_math = "material * tool * control -> part"
+rust_form = "ProcessInput -> ProcessStep -> PartState"
+meaning = "manufacturing is physics disciplined by information"
+
+[2_information.manufacture.metrology]
+symbol = "optic|probe|interferometer|gauge|fixture"
+transform = "measure|compare|correct"
+structure = "error_correction_loop"
+ascii_math = "part_error -> measure -> error_map -> correction"
+rust_form = "PartState -> ErrorMap -> Correction"
+meaning = "metrology is the eye of manufacturing"
+
+[2_information.rtc]
+symbol = "sensor|controller|actuator|clock"
+transform = "sense|compute|command|actuate"
+structure = "real_time_loop"
+ascii_math = "S_t -> y_t -> u_t -> S_t+1"
+rust_form = "Sensor -> Controller -> Command -> Actuator"
+meaning = "real_time_control touches matter before drift wins"
+
+[2_information.failure]
+symbol = "Option<T>|Result<T,E>|alarm|scrap|rework"
+transform = "propagate|recover|abort|inspect"
+structure = "error_graph"
+ascii_math = "op(x) -> Ok(y) + Err(e)"
+rust_form = "Result<T,E>"
+meaning = "failure is a branch, not a ghost"
+
+[2_information.safety]
+symbol = "unsafe|hazard|undefined_state"
+transform = "isolate|mark|audit|contain"
+structure = "escape_boundary"
+ascii_math = "unsafe(action) -> proof_or_quarantine"
+rust_form = "unsafe { ... }"
+meaning = "constraint escape must be visible"
+
+[2_information.efficiency]
+symbol = "latency|memory|compute|cloud_cost"
+transform = "reduce|bound|optimize"
+structure = "runtime_economics"
+ascii_math = "runway ~= cash / execution_cost"
+rust_form = "zero_cost_abstraction"
+meaning = "lower overhead is more survival time"
+
+[3_boundary.boundary]
+symbol = "agent|resource|permission|lifetime"
+transform = "own|lend|reclaim|expire"
+structure = "permission_topology"
+ascii_math = "control(x,t) -> allowed(action)"
+rust_form = "Lifetime<'a> + BorrowRules"
+meaning = "who may change state is part of the state"
+
+[4_agent.agent]
+symbol = "belief|state|goal|constraint"
+transform = "decide|act|learn"
+structure = "policy_loop"
+ascii_math = "S_t -pi-> A_t -E-> S_t+1"
+rust_form = "State -> Policy -> Action"
+meaning = "agency is typed consequence selection"
+
+[5_network.network]
+symbol = "machine|agent|supplier|customer|service"
+transform = "message|stream|sync|price|deliver"
+structure = "typed_message_graph"
+ascii_math = "node_i -> msg -> node_j"
+rust_form = "AsyncTask -> Channel -> AsyncTask"
+meaning = "networks are distributed state transitions"
+
+[6_currency.currency]
+symbol = "cash|credit|price|runway|optionality"
+transform = "pay|borrow|burn|allocate|compound"
+structure = "persistence_metric"
+ascii_math = "cash_t + inflow - outflow - waste -> cash_t+1"
+rust_form = "CostModel -> Runway"
+meaning = "money is time_to_continue"
+
+[6_currency.ownership]
+symbol = "value|resource|device|buffer|part"
+transform = "move|borrow|mutate|drop"
+structure = "ownership_graph"
+ascii_math = "owner(x) -> borrow(x) -> mutate(x) -> drop(x)"
+rust_form = "T -> &T -> &mut T -> Drop"
+meaning = "ownership is boundary made executable"
+
+
+[6_currency.quote]
+symbol = "job|machine|material|supplier|cash"
+transform = "simulate|price|rank|allocate"
+structure = "decision_surface"
+ascii_math = "p* = argmax_p E[profit(p)] - lambda*risk(p)"
+rust_form = "QuoteRequest -> RiskEngine -> Quote"
+meaning = "a quote is a controlled bet against physics and time"
+
+[7_policy.execution]
+symbol = "task|thread|channel|event|command"
+transform = "spawn|send|receive|schedule|commit"
+structure = "runtime_pipeline"
+ascii_math = "event -> validate -> state -> policy -> command"
+rust_form = "Parser -> TypedState -> PolicyEngine -> Command"
+meaning = "execution is composition under deadlines"
+
+[composition]
+machine = "1_physical_form -> 2_information -> 3_boundary -> 4_agent -> 5_network -> 6_currency -> 7_policy"
+ascii_math = "physics -> measurement -> control -> policy -> execution -> persistence"
+rust_form = "State -> Type -> Policy -> Command -> Effect -> Value"
+
+[composition.closed_loop]
+ascii_math = "CUR_t -> invest -> MFG -> INF -> POL -> CUR_t+1"
+meaning = "currency funds instruments; instruments improve control; control improves currency"

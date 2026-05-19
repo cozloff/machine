@@ -1,0 +1,126 @@
+[def]
+symbol = { semantic = "object/state/value", math = "object|set|type|state", python = "variable|class|value|data_structure", toml = "node|glyph|cell|frame" }
+transform = { semantic = "change/relation/process", math = "morphism|function|relation|rewrite", python = "function|method|operation|mutation", toml = "arrow|box|wire|transition" }
+
+[def.structure]
+semantic = "composition/organization/system"
+math = "category|graph|string_diagram|state_space"
+python = "module|object_graph|control_flow|runtime_trace"
+toml = "diagram|timeline|network|grid"
+
+[toml]
+role = "visual syntax for compositional meaning"
+
+[toml.represents.symbol]
+as = "node|glyph|cell|frame"
+ex = { object = "(A)", state = "{S}", value = "[x]", array_cell = "|5|" }
+
+[toml.represents.transform]
+as = "arrow|box|operation|wire"
+ex = { morphism = "A -f-> B", function_box = "A -> [f] -> B", operation = "S_t -op-> S_t+1", rewrite = "expr1 => expr2" }
+
+[toml.represents.structure]
+as = "diagram|timeline|network|grid"
+
+[toml.represents.structure.ex]
+category_path = "A -f-> B -g-> C"
+algorithm_trace = "S0 -> S1 -> S2"
+array = [1,2,true,"hey"]
+multiple_dimensions = [[1,2],[3,4]]
+array_time_grid = """
+t0:[5 2 4 1]
+t1:[2 5 4 1]
+t2:[2 4 5 1]
+"""
+nesting = {A = {f = "B"}, C = {g = "D"}}
+network = "A -> B, A -> C, C -> D"
+
+[toml.ascii_math]
+role = "compact textual math notation"
+symbol = "A|B|C|x|y|S_t|G|V|E"
+transform = "f:A->B | x->f(x) | f(x)=y | g o f | x R y | e1=>e2 | S_t-op->S_t+1 | f tensor g | inv(f)"
+structure = "g o f:A->C | G=(V,E) | E={A->B,C->D} | S0->S1->S2 | A*B | A+B"
+
+[toml.ascii_math.ex]
+function = "f:A->B"
+composition = "A-f->B-g->C == g∘f:A->C"
+state_transition = "S_t-op->S_t+1"
+graph = "G=(V,E); V={A,B,C}; E={A->B,A->C,C->D}"
+rewrite = "expr1=>expr2"
+
+[toml.python]
+role = "executable algorithmic representation"
+symbol = "variable|class|value|data_structure"
+transform = "function|method|operation|mutation"
+structure = "control_flow|runtime_trace|state_sequence"
+
+[toml.python.ex]
+function = "def f(a: A) -> B: ..."
+composition = "c = g(f(a))"
+state_transition = "state = op(state)"
+mutation = "arr[i], arr[j] = arr[j], arr[i]"
+trace = "s0 = arr; s1 = swap(s0,0,1); s2 = swap(s1,1,2)"
+
+[toml.rules]
+goal = "optimize representation for concise structure, formal meaning, and executable intuition"
+principle = "represent every system as symbols, transforms, and structures"
+source_of_truth = "toml structure"
+math_layer = "ascii_math abstraction"
+execution_layer = "python snippets"
+visual_layer = "diagrammatic reasoning"
+
+[toml.rules.optimization]
+prefer_structure_over_sentences = true
+prefer_ascii_math_for_abstraction = true
+prefer_python_for_algorithm_flow = true
+prefer_examples_for_disambiguation = true
+prefer_single_source_multiple_views = true
+avoid_redundant_explanation = true
+avoid_untyped_symbols = true
+avoid_unstructured_prose = true
+
+[toml.rules.compression]
+symbol = "name the thing once, reuse it everywhere"
+transform = "name the operation once, compose it everywhere"
+structure = "show organization through tables, paths, graphs, or timelines"
+composition = "prefer f:A->B and g o f over repeated prose"
+state = "prefer S_t-op->S_t+1 over describing each step in sentences"
+algorithm = "prefer short python snippets when control flow matters"
+diagram = "prefer A-f->B-g->C when relationship shape matters"
+
+[toml.rules.representation]
+toml = "stores the structured schema and keeps fields parseable"
+ascii_math = "compresses abstract relationships into symbolic operations"
+python = "shows executable flow without overexplaining"
+diagrammatic_reasoning = "shows structure, direction, composition, and state change"
+
+[toml.rules.reasoning]
+conciseness = "shorter notation reduces noise and exposes structure"
+composability = "small symbols and transforms can build larger systems"
+transfer = "same concept can move between math, python, and diagrams"
+parsing = "toml keeps the representation machine-readable"
+visualization = "graph-like forms make structure easier to see"
+execution = "python grounds abstract notation in runnable behavior"
+abstraction = "ascii math removes implementation detail while preserving meaning"
+
+[toml.rules.style]
+line_width = "prefer ~70-90 chars when readable"
+names = "use stable names for symbols and transforms"
+operators = "use -> for direction, o for composition, => for rewrite"
+examples = "include one compact example per concept"
+nesting = "use TOML sections for major concepts, inline tables for compact leaves"
+strings = "use strings for symbolic notation to preserve parser validity"
+mixing = "use TOML for structure, ASCII math for abstraction, Python for execution, diagrams for visualization as much as possible"
+
+[toml.rules.equivalence]
+semantic = "meaning layer"
+toml = "structured storage layer"
+ascii_math = "formal compression layer"
+python = "algorithmic execution layer"
+diagrammatic_reasoning = "visual/compositional reasoning layer"
+
+[toml.rules.equivalence.examples]
+function = "math:f:A->B | python:def f(a)->b | diagram:A-f->B"
+composition = "math:g o f | python:g(f(x)) | diagram:A-f->B-g->C"
+state_step = "math:S_t-op->S_t+1 | python:state=op(state) | diagram:S0->S1"
+graph = "math:G=(V,E) | python:adjacency_dict | diagram:A->B,A->C"
