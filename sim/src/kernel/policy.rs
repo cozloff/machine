@@ -4,6 +4,7 @@ use crate::kernel::currency::CurrencyConsequence;
 use crate::kernel::execution::StageTiming;
 use crate::kernel::information::ShockState;
 use crate::kernel::physical_form::ManufacturingConsequence;
+use crate::kernel::reality::{RealityObservation, RealitySignal};
 use rand::thread_rng;
 use std::time::Instant;
 
@@ -113,6 +114,17 @@ impl RiskEngine {
             control_surface: control_surface(average_profit, average_cash_shortfall),
         }
     }
+
+    pub fn observe_reality(
+        &self,
+        decision: &QuoteDecision,
+        observation: Option<RealityObservation>,
+    ) -> RealitySignal {
+        match observation {
+            Some(observation) => RealitySignal::measure(decision, observation),
+            None => RealitySignal::open_loop(decision),
+        }
+    }
 }
 
 impl RiskTrace {
@@ -131,6 +143,20 @@ impl RiskTrace {
         self.total_cost += currency.total_cost;
         self.total_cost_squared += currency.total_cost.powi(2);
         self.total_cash_shortfall += currency.cash_shortfall;
+    }
+}
+
+impl QuoteDecision {
+    pub fn average_cost(&self) -> f64 {
+        self.average_cost
+    }
+
+    pub fn average_profit(&self) -> f64 {
+        self.average_profit
+    }
+
+    pub fn average_cash_shortfall(&self) -> f64 {
+        self.average_cash_shortfall
     }
 }
 
@@ -187,6 +213,44 @@ pub fn print_report(agent: &AgentBoundary, request: &QuoteRequest, decision: &Qu
     println!("Agent consequence");
     println!("  survival delta: ${:.2}", decision.survival_delta);
     println!("  control surface: {:.2}", decision.control_surface);
+}
+
+pub fn print_reality_signal(signal: &RealitySignal) {
+    println!();
+    println!("Reality signal");
+    println!(
+        "  prediction: cost=${:.2}, profit=${:.2}, cash_shortfall=${:.2}",
+        signal.prediction.expected_cost,
+        signal.prediction.expected_profit,
+        signal.prediction.expected_cash_shortfall
+    );
+
+    if signal.is_open_loop() {
+        println!("  status: open_loop");
+        println!("  warning: no external measurement has entered the loop");
+        println!("  correction: prediction -> action -> world -> measurement -> error -> update");
+        return;
+    }
+
+    if let Some(observation) = &signal.observation {
+        println!(
+            "  observation: cost=${:.2}, profit=${:.2}, cash_shortfall=${:.2}",
+            observation.observed_cost,
+            observation.observed_profit,
+            observation.observed_cash_shortfall
+        );
+    }
+
+    if let Some(error) = &signal.update.error {
+        println!(
+            "  error: cost=${:.2}, profit=${:.2}, cash_shortfall=${:.2}",
+            error.cost_error, error.profit_error, error.cash_shortfall_error
+        );
+        println!(
+            "  confidence pressure: {:.6}",
+            signal.update.confidence_pressure
+        );
+    }
 }
 
 fn control_surface(average_profit: f64, average_cash_shortfall: f64) -> f64 {

@@ -1,0 +1,154 @@
+[goal_function]
+name = "agent_1_reality_optimization"
+claim = "this is real; this is about agent:1"
+purpose = "maximize persistence_time, control_surface, and reality_corrected wealth"
+warning = "no reality_signal -> no truth -> fake optimization"
+
+[goal_function.agent]
+symbol = "agent_1"
+identity = "git_contributor|first_accountable_boundary"
+transform = "choose|act|observe|update|compound"
+structure = "open_accountable_policy_loop"
+ascii_math = "agent_1 -> action -> world -> signal -> update -> agent_1"
+
+[goal_function.objective]
+persistence_time = "live_longer"
+control_surface = "more_allowed_actions"
+wealth = "owned_successful_interventions"
+power = "ability_to_change_state"
+truth = "prediction_error_from_reality"
+meaning = "none_assumed"
+
+[goal_function.ascii_math]
+state = "S_t = internal_state + external_constraints + currency_state"
+action = "A_t = policy(S_t)"
+world = "W_t+1 = world(A_t)"
+signal = "Y_t+1 = observe(W_t+1)"
+error = "Err_t+1 = Y_t+1 - predict(A_t)"
+update = "S_t+1 = update(S_t, Err_t+1)"
+goal = "pi* = argmax_pi E[sum_t gamma^t * R_t]"
+
+[goal_function.reward]
+R_t = "w1*persistence_delta + w2*wealth_delta + w3*control_delta - w4*risk - w5*self_deception"
+persistence_delta = "survival_time_t+1 - survival_time_t"
+wealth_delta = "owned_value_t+1 - owned_value_t"
+control_delta = "allowed_actions_t+1 - allowed_actions_t"
+risk = "loss_probability + cash_shortfall + physical_failure"
+self_deception = "confidence_without_reality_signal"
+
+[goal_function.reality_constraint]
+closed_loop = "simulation -> decision -> report"
+open_loop = "prediction -> action -> world -> measurement -> error -> update"
+law = "closed_loop != truth"
+rule = "only reality_signal can promote simulation into knowledge"
+
+[goal_function.policy]
+symbol = "risk_adjusted_action"
+transform = "rank|choose|execute|measure"
+structure = "decision_surface_under_feedback"
+ascii_math = "best_action = argmax_a EV(a) - risk(a) - fake_confidence(a)"
+python = "action = optimize(state, reality_signal, constraints)"
+
+[goal_function.machine_kernel]
+substrate = "physics constrains action"
+physical_form = "manufacturing turns action into artifact"
+information = "measurement turns artifact into state"
+boundary = "agent_1 receives filtered reality"
+agent = "agent_1 chooses policy"
+network = "markets decide reachable actions"
+currency = "money measures persistence_time"
+policy = "chosen consequence"
+reality_feedback = "world pushes back"
+
+[goal_function.first_product]
+domain = "precision_manufacturing"
+machine = "quote_risk_engine"
+real_signal = "accepted|rejected|countered|paid|scrap|rework|late|profit"
+ascii_math = "quote -> customer_response -> cash_event -> model_update"
+goal = "quote prices that increase wealth and reduce fake confidence"
+
+[goal_function.closed_loop]
+name = "agent_1_ai_product_reality_loop"
+claim = "agent_1 + ai + simulation_product must close against reality"
+purpose = "turn thinking into product, product into signal, signal into wealth"
+
+[loop.agent_1]
+symbol = "agent_1"
+role = "origin_boundary|owner|policy_selector"
+transform = "intend|ask|choose|ship|observe|update"
+structure = "human_accountable_loop"
+ascii_math = "agent_1 -> prompt -> ai -> plan -> action -> world_signal"
+meaning = "agent_1 owns the objective and the consequence"
+
+[loop.ai]
+symbol = "ai_model"
+role = "compression_engine|reasoning_assistant|code_generator"
+transform = "compress|simulate|generate|criticize|translate"
+structure = "semantic_transform_layer"
+ascii_math = "agent_state + world_data -> ai -> candidate_policy"
+meaning = "AI is not truth; AI is transform over symbols"
+
+[loop.simulation]
+symbol = "simulator"
+role = "fake_world|counterfactual_engine|risk_surface"
+transform = "sample|stress|forecast|rank"
+structure = "closed_model_loop"
+ascii_math = "assumption -> simulation -> predicted_distribution"
+meaning = "simulation creates possible consequences, not evidence"
+
+[loop.product]
+symbol = "ai_product"
+role = "reality_interface|policy_machine|signal_collector"
+transform = "deploy|measure|log|score|update"
+structure = "open_feedback_system"
+ascii_math = "prediction -> user_action -> market_response -> error -> update"
+meaning = "product is the bridge from fake reality to real signal"
+
+[loop.reality]
+symbol = "reality_signal"
+role = "judge"
+transform = "accept|reject|pay|ignore|break|delay|surprise"
+structure = "external_feedback_channel"
+ascii_math = "world_response - prediction -> prediction_error"
+meaning = "reality is what pushes back"
+
+[loop.closed_ascii_math]
+step_0 = "agent_1 -> goal"
+step_1 = "goal -> ai -> product_plan"
+step_2 = "product_plan -> simulator -> predicted_outcome"
+step_3 = "agent_1 -> ship(product)"
+step_4 = "product -> world -> reality_signal"
+step_5 = "reality_signal -> error -> ai_update + model_update"
+step_6 = "updated_policy -> better_action -> wealth_delta"
+
+[loop.objective]
+goal = "pi* = argmax_pi E[sum_t gamma^t * R_t]"
+R_t = "wealth_delta + control_delta + persistence_delta - risk - self_deception"
+truth = "min(prediction_error)"
+power = "max(allowed_actions)"
+money = "max(owned_successful_interventions)"
+life = "max(persistence_time)"
+
+[loop.constraint]
+closed_model = "ai + simulator without reality_signal"
+closed_model_failure = "beautiful_fake_world"
+open_model = "ai + simulator + product + world_signal"
+open_model_success = "accountable_reality_machine"
+law = "no external signal -> no truth"
+
+[loop.ai_product]
+first_product = "quote_risk_engine"
+domain = "precision_manufacturing"
+input = "job|machine|material|supplier|cash|customer"
+simulation = "monte_carlo_quote_risk"
+ai_layer = "semantic_parser|risk_explainer|policy_generator"
+reality_signal = "accepted|rejected|countered|paid|scrap|late|profit"
+output = "risk_adjusted_quote|model_update|wealth_delta"
+
+[loop.feedback_update]
+agent_1 = "updates_goal|taste|strategy|risk_tolerance"
+ai = "updates_context|memory|reasoning_template"
+simulation = "updates_distributions|priors|cost_model"
+product = "updates_interface|workflow|data_capture"
+policy = "updates_action_selection"
+wealth = "updates_persistence_time|control_surface"
