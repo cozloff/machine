@@ -1,3 +1,4 @@
+use crate::kernel::agent::AgentBoundary;
 use crate::kernel::boundary::QuoteRequest;
 use crate::kernel::currency::CurrencyConsequence;
 use crate::kernel::execution::StageTiming;
@@ -33,16 +34,26 @@ pub struct QuoteDecision {
     cash_shortfall_probability: f64,
     average_cash_shortfall: f64,
     max_cash_shortfall: f64,
+    survival_delta: f64,
+    control_surface: f64,
 }
 
 pub struct RiskEngine {
+    agent: AgentBoundary,
     request: QuoteRequest,
 }
 
 impl RiskEngine {
     pub fn new(request: QuoteRequest) -> Self {
         request.validate();
-        Self { request }
+        Self {
+            agent: AgentBoundary::first_contributor(),
+            request,
+        }
+    }
+
+    pub fn agent(&self) -> &AgentBoundary {
+        &self.agent
     }
 
     pub fn request(&self) -> &QuoteRequest {
@@ -98,6 +109,8 @@ impl RiskEngine {
             cash_shortfall_probability,
             average_cash_shortfall,
             max_cash_shortfall: trace.max_cash_shortfall,
+            survival_delta: average_profit - average_cash_shortfall,
+            control_surface: control_surface(average_profit, average_cash_shortfall),
         }
     }
 }
@@ -121,7 +134,19 @@ impl RiskTrace {
     }
 }
 
-pub fn print_report(request: &QuoteRequest, decision: &QuoteDecision) {
+pub fn print_report(agent: &AgentBoundary, request: &QuoteRequest, decision: &QuoteDecision) {
+    println!("Accountable boundary");
+    println!("  identity: {}", agent.identity);
+    println!("  name: {}", agent.name);
+    println!("  origin transform: {}", agent.origin_transform);
+    println!("  objective: {}", agent.kernel_line());
+    println!(
+        "  drive: persistence_time={}, control_surface={}, optionality={}",
+        agent.objective.persistence_time,
+        agent.objective.control_surface,
+        agent.objective.optionality
+    );
+    println!();
     println!("Manufacturing quote risk summary");
     println!("  job: {}", request.job_name);
     println!("  material: {}", request.material_name);
@@ -158,4 +183,12 @@ pub fn print_report(request: &QuoteRequest, decision: &QuoteDecision) {
         decision.average_cash_shortfall
     );
     println!("  max cash shortfall: ${:.2}", decision.max_cash_shortfall);
+    println!();
+    println!("Agent consequence");
+    println!("  survival delta: ${:.2}", decision.survival_delta);
+    println!("  control surface: {:.2}", decision.control_surface);
+}
+
+fn control_surface(average_profit: f64, average_cash_shortfall: f64) -> f64 {
+    average_profit / (1.0 + average_cash_shortfall)
 }

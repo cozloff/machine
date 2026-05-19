@@ -21,7 +21,7 @@ fn main() {
     let decision = engine.decide(&trace);
 
     let report_started = Instant::now();
-    print_report(engine.request(), &decision);
+    print_report(engine.agent(), engine.request(), &decision);
     timing.report = report_started.elapsed();
 
     timing.total = total_started.elapsed();

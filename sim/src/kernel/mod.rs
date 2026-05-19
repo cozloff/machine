@@ -1,3 +1,4 @@
+pub mod agent;
 pub mod boundary;
 pub mod currency;
 pub mod execution;
