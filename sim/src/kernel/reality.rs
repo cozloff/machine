@@ -1,3 +1,4 @@
+use crate::kernel::boundary::{QuoteRequest, RealityObservationInput};
 use crate::kernel::policy::QuoteDecision;
 
 #[derive(Debug)]
@@ -9,9 +10,13 @@ pub struct Prediction {
 
 #[derive(Debug)]
 pub struct RealityObservation {
+    pub customer_response: String,
     pub observed_cost: f64,
     pub observed_profit: f64,
     pub observed_cash_shortfall: f64,
+    pub scrap: Option<bool>,
+    pub rework: Option<bool>,
+    pub late: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -79,6 +84,25 @@ impl RealitySignal {
 
     pub fn is_open_loop(&self) -> bool {
         matches!(self.update.status, FeedbackStatus::OpenLoop)
+    }
+}
+
+impl RealityObservation {
+    pub fn from_input(input: &RealityObservationInput, request: &QuoteRequest) -> Self {
+        let observed_profit = input.actual_cash_received - input.actual_total_cost;
+        let observed_cash_shortfall = input
+            .actual_cash_shortfall
+            .unwrap_or_else(|| f64::max(0.0, input.actual_total_cost - request.cash_on_hand));
+
+        Self {
+            customer_response: input.customer_response.clone(),
+            observed_cost: input.actual_total_cost,
+            observed_profit,
+            observed_cash_shortfall,
+            scrap: input.scrap,
+            rework: input.rework,
+            late: input.late,
+        }
     }
 }
 

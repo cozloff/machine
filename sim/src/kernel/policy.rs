@@ -3,9 +3,12 @@ use crate::kernel::boundary::QuoteRequest;
 use crate::kernel::currency::CurrencyConsequence;
 use crate::kernel::execution::StageTiming;
 use crate::kernel::information::ShockState;
+use crate::kernel::objective::{GoalFunction, RewardScore};
 use crate::kernel::physical_form::ManufacturingConsequence;
+use crate::kernel::product::ProductLoop;
 use crate::kernel::reality::{RealityObservation, RealitySignal};
-use rand::thread_rng;
+use rand::SeedableRng;
+use rand::rngs::StdRng;
 use std::time::Instant;
 
 const RISK_QUANTILE_Z: f64 = 1.65;
@@ -63,7 +66,7 @@ impl RiskEngine {
 
     pub fn simulate(&self, timing: &mut StageTiming) -> RiskTrace {
         let simulation_started = Instant::now();
-        let mut rng = thread_rng();
+        let mut rng = StdRng::seed_from_u64(self.request.simulation_seed);
         let mut trace = RiskTrace::default();
 
         for _ in 0..self.request.simulations {
@@ -158,6 +161,18 @@ impl QuoteDecision {
     pub fn average_cash_shortfall(&self) -> f64 {
         self.average_cash_shortfall
     }
+
+    pub fn risk_adjusted_quote(&self) -> f64 {
+        self.risk_adjusted_quote
+    }
+
+    pub fn loss_probability(&self) -> f64 {
+        self.loss_probability
+    }
+
+    pub fn cash_shortfall_probability(&self) -> f64 {
+        self.cash_shortfall_probability
+    }
 }
 
 pub fn print_report(agent: &AgentBoundary, request: &QuoteRequest, decision: &QuoteDecision) {
@@ -177,6 +192,7 @@ pub fn print_report(agent: &AgentBoundary, request: &QuoteRequest, decision: &Qu
     println!("  job: {}", request.job_name);
     println!("  material: {}", request.material_name);
     println!("  simulations: {}", request.simulations);
+    println!("  simulation seed: {}", request.simulation_seed);
     println!("  days until paid: {}", request.days_until_paid);
     println!();
     println!("Quote economics");
@@ -233,11 +249,18 @@ pub fn print_reality_signal(signal: &RealitySignal) {
     }
 
     if let Some(observation) = &signal.observation {
+        println!("  customer response: {}", observation.customer_response);
         println!(
             "  observation: cost=${:.2}, profit=${:.2}, cash_shortfall=${:.2}",
             observation.observed_cost,
             observation.observed_profit,
             observation.observed_cash_shortfall
+        );
+        println!(
+            "  outcome flags: scrap={}, rework={}, late={}",
+            format_optional_bool(observation.scrap),
+            format_optional_bool(observation.rework),
+            format_optional_bool(observation.late)
         );
     }
 
@@ -253,6 +276,79 @@ pub fn print_reality_signal(signal: &RealitySignal) {
     }
 }
 
+pub fn print_goal_function(goal: &GoalFunction, score: &RewardScore, product_loop: &ProductLoop) {
+    println!();
+    println!("Goal function");
+    println!("  name: {}", goal.name);
+    println!("  purpose: {}", goal.purpose);
+    if score.self_deception > 0.0 {
+        println!("  warning: no reality_signal -> no truth -> fake optimization");
+    } else {
+        println!("  truth source: reality_signal");
+    }
+    println!("  reward: persistence_delta + wealth_delta + control_delta - risk - self_deception");
+    println!("  persistence delta: {:.2}", score.persistence_delta);
+    println!("  wealth delta: {:.2}", score.wealth_delta);
+    println!("  control delta: {:.6}", score.control_delta);
+    println!("  risk: {:.2}", score.risk);
+    println!("  self deception: {:.2}", score.self_deception);
+    println!("  total reward: {:.2}", score.total_reward);
+    println!();
+    println!("AI product reality loop");
+    println!("  first product: {}", product_loop.first_product);
+    println!("  domain: {}", product_loop.domain);
+    println!("  input: {}", product_loop.input);
+    println!("  simulation: {}", product_loop.simulation);
+    println!("  ai layer: {}", product_loop.ai_layer);
+    println!("  reality signal: {}", product_loop.reality_signal);
+    println!("  output: {}", product_loop.output);
+    println!("  loop: {}", product_loop.ascii_loop());
+}
+
+pub fn print_action_ticket(ticket: &crate::kernel::action::ActionTicket) {
+    println!();
+    println!("Next action");
+    println!("  command: {}", ticket.command);
+    println!("  reason: {}", ticket.reason);
+    println!("  job: {}", ticket.job_name);
+    println!("  quote price: ${:.2}", ticket.quote_price);
+    println!("  required deposit: ${:.2}", ticket.required_deposit);
+    println!(
+        "  response deadline: {} hours",
+        ticket.response_deadline_hours
+    );
+    println!("  signal to collect: {}", ticket.signal_to_collect);
+    println!("  execution rule: {}", ticket.execution_rule);
+    println!("  payment ready: {}", ticket.payment_ready);
+    println!("  outreach ready: {}", ticket.outreach_ready);
+    println!("  payment: {}", ticket.payment_instruction);
+    println!("  outreach: {}", ticket.outreach_instruction);
+    println!("  ticket: {}", ticket.output_path);
+    println!("  message: {}", ticket.message_path);
+    println!("  payment request: {}", ticket.payment_request_path);
+    println!("  integration payload: {}", ticket.integration_payload_path);
+    println!("  email draft: {}", ticket.email_path);
+}
+
+pub fn print_business_order(order: &crate::kernel::business::BusinessOrder) {
+    println!();
+    println!("Business order");
+    println!("  constraint: {}", order.constraint);
+    println!("  priority: {}", order.priority);
+    println!("  command: {}", order.command);
+    println!("  forbidden: {}", order.forbidden);
+    println!("  success signal: {}", order.success_signal);
+    println!("  order: {}", order.order_path);
+}
+
 fn control_surface(average_profit: f64, average_cash_shortfall: f64) -> f64 {
     average_profit / (1.0 + average_cash_shortfall)
+}
+
+fn format_optional_bool(value: Option<bool>) -> &'static str {
+    match value {
+        Some(true) => "true",
+        Some(false) => "false",
+        None => "unknown",
+    }
 }

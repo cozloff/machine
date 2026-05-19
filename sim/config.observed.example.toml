@@ -23,3 +23,24 @@ cash_on_hand = 18000.0
 days_until_paid = 45
 simulations = 100000
 simulation_seed = 1
+
+[payment]
+provider = "stripe_payment_links_api"
+recipient_name = "Agent 1"
+payment_url = "https://example.com/pay/deposit"
+memo = "Aerospace bracket prototype run deposit"
+
+[outreach]
+provider = "resend_email_api"
+to = "customer@example.com"
+from = "agent1@example.com"
+subject = "Quote for aerospace bracket prototype run"
+
+[reality_observation]
+customer_response = "paid"
+actual_total_cost = 25840.0
+actual_cash_received = 26900.0
+actual_cash_shortfall = 7840.0
+scrap = false
+rework = true
+late = false
