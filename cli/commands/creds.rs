@@ -1,4 +1,4 @@
-use crate::args::{CredsArgs, CredsCommand};
+use crate::args::creds_args::{CredsArgs, CredsCommand};
 use crate::commands::CommandResult;
 use crate::services::cmd::ProcessCmd;
 use crate::services::creds::keyvault::{Creds, CredsCli};

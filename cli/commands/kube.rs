@@ -1,4 +1,11 @@
-use crate::args::{KubernetesArgs, KubernetesCommand, DeployArgs, DeployCommand, MachineTargets, DeployMachineArgs};
+use crate::args::kube_args::{
+    KubernetesArgs, 
+    KubernetesCommand, 
+    DeployArgs, 
+    DeployCommand, 
+    MachineTargets, 
+    DeployMachineArgs
+};
 use crate::commands::CommandResult;
 use crate::services::kube::local_cluster::{LocalCluster, LocalClusterCli};
 use crate::services::cmd::ProcessCmd;

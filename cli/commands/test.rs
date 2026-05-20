@@ -1,4 +1,4 @@
-use crate::args::{TestArgs, TestCommand};
+use crate::args::test_args::{TestArgs, TestCommand};
 use crate::commands::CommandResult;
 use colored::Colorize;
 use console::style;
