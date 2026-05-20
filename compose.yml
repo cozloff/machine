@@ -1,0 +1,16 @@
+services:
+  jumpbox:
+    container_name: jumpbox
+    build:
+      context: .
+      dockerfile: jumpbox/Dockerfile.jumpbox
+    working_dir: /workspace
+    stdin_open: true # Keep the container running
+    tty: true        # Allocate a pseudo-TTY for interactive use 
+    privileged: true
+    volumes:
+      - .:/workspace
+      - /sys:/sys:ro
+      - /dev:/dev
+    ports:
+      - "8080:8080"

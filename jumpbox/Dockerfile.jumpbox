@@ -1,0 +1,90 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Pacific/Honolulu
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=/usr/local/cargo/bin:$PATH
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Normal interactive shell for debugging inside the container.
+    bash \
+    \
+    # Trusted root certificates so HTTPS works for curl, wget, git, rustup, APIs, etc.
+    ca-certificates \
+    \
+    # HTTP/API testing and downloading files from URLs.
+    curl \
+    wget \
+    \
+    # Source control; useful for cloning repos or inspecting mounted projects.
+    git \
+    \
+    # SSH client only; lets the jumpbox connect out to servers/Git remotes.
+    openssh-client \
+    \
+    # JSON parser; essential for reading API responses and CLI output cleanly.
+    jq \
+    \
+    # Pager for reading long logs/configs without dumping everything at once.
+    less \
+    \
+    # Small editors for emergency edits inside the container.
+    nano \
+    vim-tiny \
+    \
+    # Core network inspection: interfaces, routes, sockets via ip/ss.
+    iproute2 \
+    \
+    # Provides ping for basic ICMP reachability tests.
+    iputils-ping \
+    \
+    # DNS debugging tools like dig and nslookup.
+    dnsutils \
+    \
+    # Path/routing inspection to see where packets travel.
+    traceroute \
+    \
+    # TCP port testing and simple raw socket checks via nc.
+    netcat-openbsd \
+    \
+    # Packet capture for deeper Docker/network debugging.
+    tcpdump \
+    \
+    # Process inspection tools like ps, top, free, uptime.
+    procps \
+    \
+    # Shows which processes have files/ports open.
+    lsof \
+    \
+    # Identifies file types, binaries, archives, certs, etc.
+    file \
+    \
+    # Common archive extraction.
+    unzip \
+    xz-utils \
+    \
+    # Native compiler/toolchain base; useful for Rust crates with C/C++ build deps.
+    build-essential \
+    \
+    # Lets build scripts discover native libraries and compiler/linker flags.
+    pkg-config \
+    \
+    # OpenSSL headers/libs; many Rust/network/TLS crates need this unless using rustls.
+    libssl-dev \
+    \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable
+
+WORKDIR /opt/machine
+
+COPY Cargo.toml Cargo.lock ./
+COPY cli ./cli
+
+RUN cargo install --path . --force
+
+WORKDIR /workspace
+
+CMD ["sleep", "infinity"]

@@ -8,7 +8,7 @@ use crate::args::machine_args::{
 };
 use crate::commands::CommandResult;
 use crate::services::cmd::run as cmd;
-use crate::services::machine::machine_inspect::inspect_and_display;
+// use crate::services::machine::machine_inspect::inspect_and_display;
 
 pub fn run(args: MachineArgs) -> CommandResult {
     match args.command {
@@ -54,7 +54,7 @@ fn ssd(args: SsdArgs) -> CommandResult {
 }
 
 fn inspect_ssd() -> CommandResult {
-    inspect_and_display()?;
+    // inspect_and_display()?;
     Ok(())
 }
 
