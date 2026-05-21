@@ -1,0 +1,14 @@
+[[table]]
+name = "architecture_articles"
+columns = ["title", "author", "category", "date", "url"]
+rows = [
+    ["Hexagonal Architecture in Rust", "Lucor", "Software Architecture", "2023-01-01", "https://medium.com/@lucorset/hexagonal-architecture-in-rust-72f8958eb26d"],
+    ["Mastering Hexagonal Architecture in Rust", "How to Code It", "Software Architecture", "2023-01-01", "https://www.howtocodeit.com/guides/master-hexagonal-architecture-in-rust"]
+]
+
+[[table]]
+name = "hexagonal_architecture_terms"
+columns = ["name", "case", "description", "url"]
+rows = [
+    ["oubound adapter", "external API client gateway", "An adapter that allows external clients to interact with 3rd party APIs", "https://www.howtocodeit.com/guides/master-hexagonal-architecture-in-rust"]
+]

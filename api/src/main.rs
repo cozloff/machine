@@ -1,4 +1,5 @@
 mod handlers;
+mod infrastructure;
 mod models;
 mod repositories;
 mod routes;

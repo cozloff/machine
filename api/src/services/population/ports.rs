@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use super::PopulationServiceError;
 
-pub(in crate::services::population) type PopulationIndicator = (&'static str, &'static str);
+pub type PopulationIndicator = (&'static str, &'static str);
 
-pub(in crate::services::population) const POPULATION_INDICATORS: &[PopulationIndicator] = &[
+pub const POPULATION_INDICATORS: &[PopulationIndicator] = &[
     ("total", "SP.POP.TOTL"),
     ("growth_annual_percent", "SP.POP.GROW"),
     ("density_per_sq_km", "EN.POP.DNST"),
@@ -21,22 +21,30 @@ pub(in crate::services::population) const POPULATION_INDICATORS: &[PopulationInd
     ("life_expectancy_years", "SP.DYN.LE00.IN"),
 ];
 
-#[derive(Debug, Deserialize)]
-pub(in crate::services::population) struct WorldBankDataPoint {
-    pub country: WorldBankCountry,
-    pub countryiso3code: Option<String>,
+#[derive(Debug)]
+pub struct PopulationDataPoint {
+    pub country: PopulationCountry,
+    pub country_iso3_code: Option<String>,
     pub date: String,
-    pub indicator: Option<WorldBankIndicator>,
+    pub indicator_code: Option<String>,
     pub value: Option<f64>,
 }
 
-#[derive(Debug, Deserialize)]
-pub(in crate::services::population) struct WorldBankCountry {
+#[derive(Debug)]
+pub struct PopulationCountry {
     pub id: Option<String>,
     pub value: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub(in crate::services::population) struct WorldBankIndicator {
-    pub id: Option<String>,
+#[allow(async_fn_in_trait)]
+pub trait PopulationDataGateway {
+    async fn fetch_latest_indicator(
+        &self,
+        country_code: &str,
+        indicator: &str,
+    ) -> Result<Option<PopulationDataPoint>, PopulationServiceError>;
+
+    async fn fetch_latest_population_points(
+        &self,
+    ) -> Result<Vec<PopulationDataPoint>, PopulationServiceError>;
 }

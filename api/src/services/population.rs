@@ -1,4 +1,5 @@
 use crate::{
+    infrastructure::outbound::world_bank::WorldBankGateway,
     models::population::{PopulationRecord, PopulationSnapshot},
     repositories::population::PopulationRepository,
 };
@@ -6,21 +7,34 @@ use crate::{
 use std::collections::BTreeMap;
 
 mod error;
-mod world_bank;
+pub mod ports;
 
 pub use error::PopulationServiceError;
-use world_bank::{POPULATION_INDICATORS, WorldBankClient};
+use ports::{POPULATION_INDICATORS, PopulationDataGateway};
 
-pub struct PopulationService {
+pub struct PopulationService<G = WorldBankGateway> {
     repository: PopulationRepository,
-    world_bank: WorldBankClient,
+    population_gateway: G,
 }
 
-impl PopulationService {
+impl PopulationService<WorldBankGateway> {
     pub fn new() -> Self {
         Self {
             repository: PopulationRepository::sqlite(),
-            world_bank: WorldBankClient::new(),
+            population_gateway: WorldBankGateway::new(),
+        }
+    }
+}
+
+impl<G> PopulationService<G>
+where
+    G: PopulationDataGateway,
+{
+    #[allow(dead_code)]
+    pub fn with_gateway(repository: PopulationRepository, population_gateway: G) -> Self {
+        Self {
+            repository,
+            population_gateway,
         }
     }
 
@@ -29,7 +43,7 @@ impl PopulationService {
         country_code: &str,
     ) -> Result<Option<PopulationRecord>, PopulationServiceError> {
         let point = self
-            .world_bank
+            .population_gateway
             .fetch_latest_indicator(country_code, "SP.POP.TOTL")
             .await?;
 
@@ -49,7 +63,7 @@ impl PopulationService {
 
         for &(field, code) in POPULATION_INDICATORS {
             let Some(point) = self
-                .world_bank
+                .population_gateway
                 .fetch_latest_indicator(country_code, code)
                 .await?
             else {
@@ -76,7 +90,10 @@ impl PopulationService {
     pub async fn snapshots_for_all_countries(
         &self,
     ) -> Result<Vec<PopulationSnapshot>, PopulationServiceError> {
-        let points = self.world_bank.fetch_latest_population_points().await?;
+        let points = self
+            .population_gateway
+            .fetch_latest_population_points()
+            .await?;
         let indicator_fields = POPULATION_INDICATORS
             .iter()
             .map(|(field, code)| (*code, *field))
@@ -84,7 +101,7 @@ impl PopulationService {
         let mut snapshots = BTreeMap::<String, (PopulationSnapshot, bool)>::new();
 
         for point in points {
-            let Some(country_code) = point.countryiso3code.or(point.country.id) else {
+            let Some(country_code) = point.country_iso3_code.or(point.country.id) else {
                 continue;
             };
 
@@ -106,7 +123,7 @@ impl PopulationService {
                 continue;
             };
 
-            let Some(indicator_code) = point.indicator.and_then(|indicator| indicator.id) else {
+            let Some(indicator_code) = point.indicator_code else {
                 continue;
             };
 
