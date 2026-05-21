@@ -26,7 +26,7 @@ pub fn run(args: TestArgs) -> CommandResult {
 fn art() -> CommandResult {
     println!("{GUM_ART}");
     println!("{}", style("gum test complete").green().bold());
-    println!("{}", "ready for the next command".bright_black());
+    println!("{}", "kinda ready for the next command".bright_black());
     Ok(())
 }
 

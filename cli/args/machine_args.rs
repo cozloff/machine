@@ -20,7 +20,7 @@ pub enum MachineCommand {
     Rho,
     /// Start gpu reporting
     Gpu,
-    /// SSD Commands 
+    /// SSD Commands
     Ssd(SsdArgs),
     /// Parquet subcommands
     Parquet(ParquetArgs),
@@ -51,4 +51,3 @@ pub enum ParquetCommand {
     /// Run parquet compression test
     Nvcomp,
 }
-

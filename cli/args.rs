@@ -1,9 +1,10 @@
 use clap::{Parser, Subcommand};
 
-pub mod test_args;
-pub mod machine_args;
-pub mod kube_args;
+pub mod build_args;
 pub mod creds_args;
+pub mod kube_args;
+pub mod machine_args;
+pub mod test_args;
 
 #[derive(Parser)]
 #[command(name = "gum")]
@@ -17,6 +18,8 @@ pub struct Cli {
 pub enum Commands {
     /// Run test workflows and terminal output examples
     Test(test_args::TestArgs),
+    /// Run build workflows
+    Build(build_args::BuildArgs),
     /// Run machine workflows
     Mach(machine_args::MachineArgs),
     /// Run Kubernetes workflows
