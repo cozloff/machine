@@ -73,16 +73,39 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # OpenSSL headers/libs; many Rust/network/TLS crates need this unless using rustls.
     libssl-dev \
     \
+    # GPG tooling for importing Microsoft’s package signing key.
+    gnupg \
+    \
+    # Detects the Ubuntu codename, e.g. noble, for the Azure CLI apt repo, keyring directory, and other distro-specific setup.
+    lsb-release \
+    && mkdir -p /etc/apt/keyrings \
+    \
+    # Download Microsoft’s package signing key silently and pipe it to gpg to create a keyring file, then set permission to read-only for all users.
+    && curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/microsoft.gpg \
+    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
+    \
+    # Set up distro codename (noble) -> Azure CLI apt repo and update package lists, then install the Azure CLI and verify installation by printing its version.
+    && AZ_DIST="$(lsb_release -cs)" \
+    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_DIST} main" \
+        > /etc/apt/sources.list.d/azure-cli.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends azure-cli \
+    && az version \
+    \
+    # Install Rust using rustup with the minimal profile to save space, and set the default toolchain to stable. 
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable \
+    \
+    # After installation, clean up apt lists to reduce image size.
     && rm -rf /var/lib/apt/lists/*
-
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-    | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable
 
 WORKDIR /opt/machine
 
+# Copy the CLI source code and Cargo files into the container
 COPY Cargo.toml Cargo.lock ./
 COPY cli ./cli
 
+# Then build and install the CLI using cargo install with the --force flag to ensure it overwrites any existing installation.
 RUN cargo install --path . --force
 
 WORKDIR /workspace
