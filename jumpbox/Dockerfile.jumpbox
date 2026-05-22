@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Pacific/Honolulu
 ENV RUSTUP_HOME=/usr/local/rustup
 ENV CARGO_HOME=/usr/local/cargo
+ENV NVIM_VERSION=stable
 ENV PATH=/usr/local/cargo/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -14,8 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     \
     # HTTP/API testing and downloading files from URLs.
-    curl \
-    wget \
+    curl wget \
     \
     # Source control; useful for cloning repos or inspecting mounted projects.
     git \
@@ -26,12 +26,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # JSON parser; essential for reading API responses and CLI output cleanly.
     jq \
     \
-    # Pager for reading long logs/configs without dumping everything at once.
-    less \
+    # Pagers, fuzzy finding, and fast search for shell and Neovim workflows.
+    less fzf ripgrep fd-find \
     \
     # Small editors for emergency edits inside the container.
-    nano \
-    vim-tiny \
+    nano vim-tiny \
     \
     # Core network inspection: interfaces, routes, sockets via ip/ss.
     iproute2 \
@@ -61,11 +60,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     file \
     \
     # Common archive extraction.
-    unzip \
-    xz-utils \
+    unzip xz-utils tar gzip \
     \
     # Native compiler/toolchain base; useful for Rust crates with C/C++ build deps.
-    build-essential \
+    build-essential cmake clang clangd \
     \
     # Lets build scripts discover native libraries and compiler/linker flags.
     pkg-config \
@@ -73,30 +71,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # OpenSSL headers/libs; many Rust/network/TLS crates need this unless using rustls.
     libssl-dev \
     \
-    # GPG tooling for importing Microsoft’s package signing key.
-    gnupg \
+    # LazyVim/Mason language tooling foundations. 
+    nodejs npm python3 python3-pip python3-venv python3-pynvim luarocks \
     \
-    # Detects the Ubuntu codename, e.g. noble, for the Azure CLI apt repo, keyring directory, and other distro-specific setup.
-    lsb-release \
-    && mkdir -p /etc/apt/keyrings \
+    # Create a symlink for fdfind to fd
+    ln -s /usr/bin/fdfind /usr/local/bin/fd \
     \
-    # Download Microsoft’s package signing key silently and pipe it to gpg to create a keyring file, then set permission to read-only for all users.
-    && curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/microsoft.gpg \
-    && chmod go+r /etc/apt/keyrings/microsoft.gpg \
+    # Install Neovim from the official GitHub releases. 
+    curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+    | tar -xz -C /opt \
+    && ln -s /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
+    && ln -s /usr/local/bin/nvim /usr/local/bin/vim \
+    && ln -s /usr/local/bin/nvim /usr/local/bin/vi \
     \
-    # Set up distro codename (noble) -> Azure CLI apt repo and update package lists, then install the Azure CLI and verify installation by printing its version.
-    && AZ_DIST="$(lsb_release -cs)" \
-    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ ${AZ_DIST} main" \
-        > /etc/apt/sources.list.d/azure-cli.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends azure-cli \
-    && az version \
-    \
-    # Install Rust using rustup with the minimal profile to save space, and set the default toolchain to stable. 
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    # Set up a basic Neovim config by cloning the LazyVim starter template.
+    git clone --filter=blob:none https://github.com/LazyVim/starter /root/.config/nvim \
+    && rm -rf /root/.config/nvim/.git \
+    && mkdir -p /root/.local/share/nvim /root/.local/state/nvim /root/.cache/nvim \
+    nvim --headless "+Lazy! sync" +qa \
+    # Install Rust using rustup with the minimal profile to save space, and set the default toolchain to stable.
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable \
     \
-    # After installation, clean up apt lists to reduce image size.
+    # Clean up apt cache to reduce image size.
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/machine
