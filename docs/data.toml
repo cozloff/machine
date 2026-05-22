@@ -1,0 +1,23 @@
+[[tables]]
+name = "data_sources"
+columns = ["name", "category", "description", "type", "source"]
+rows = [
+    ["BEA Input-Output Tables", "macro spending edges", "Input-output tables from the Bureau of Economic Analysis", "csv", "https://www.bea.gov/data/io-input-output-tables"],
+    ["SEC EDGAR API", "company node state", "Financial filings data from the U.S. Securities and Exchange Commission", "json", "https://www.sec.gov/edgar.shtml"],
+    ["BLS Consumer Price Index", "Purchasing power edges", "Consumer Price Index data from the Bureau of Labor Statistics", "csv", "https://www.bls.gov/cpi/data.htm"],
+    ["USAspending API", "government spending edges", "Government spending data from USAspending.gov", "json", "https://www.usaspending.gov/data-api"],
+    ["Census CBP API", "company spending edges", "County Business Patterns data from the U.S. Census Bureau", "json", "https://www.census.gov/data/developers/data-sets/cbp.html"],
+    ["OpenCorporates API", "company legal edges", "Company data from OpenCorporates", "json", "https://opencorporates.com/info/about_api"],
+    ["FRED API", "Purchasing power edges", "Economic data from the Federal Reserve Economic Data (FRED)", "json", "https://fred.stlouisfed.org/docs/api/fred/"],
+]
+
+[[tables]]
+name = "general_apis"
+columns = ["name", "category", "description", "type", "source"]
+rows = [
+    ["API Ninjas", "general APIs", "A directory of APIs across various categories", "web directory", "https://apininjas.com/"],
+    ["RapidAPI", "general APIs", "A marketplace for APIs across various categories", "web directory", "https://rapidapi.com/"],
+    ["ProgrammableWeb", "general APIs", "A directory of APIs across various categories", "web directory", "https://www.programmableweb.com/"],
+    ["Public APIs", "general APIs", "A directory of free APIs across various categories", "web directory", "https://public-apis.io/"],
+    ["API List", "general APIs", "A directory of APIs across various categories", "web directory", "https://apilist.fun/"],
+]

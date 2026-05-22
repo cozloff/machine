@@ -1,20 +1,19 @@
 # Machine
 
-`gum` is the project CLI. It wraps the Docker Compose dev container and the
-compiled `machine` binary, so normal workflows do not need `make` or the old
-`bin/machine` wrapper.
-
-## Install
+## Getting started
 
 ```bash
-chmod +x path.sh
-./path.sh
+docker compose up
+```
+Then open another terminal:
+
+```bash
+docker exec -it jumpbox bash
 ```
 
 Check that the CLI is available:
 
 ```bash
-gum --help
 gum test
 ```
 

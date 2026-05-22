@@ -1,6 +1,9 @@
-use crate::args::{MachineArgs, MachineCommand, ParquetArgs, ParquetCommand};
+use crate::args::machine_args::{
+    MachineArgs, MachineCommand, ParquetArgs, ParquetCommand, SsdArgs, SsdCommand,
+};
 use crate::commands::CommandResult;
 use crate::services::cmd::run as cmd;
+use crate::services::machine::machine_inspect::inspect_and_display;
 
 pub fn run(args: MachineArgs) -> CommandResult {
     match args.command {
@@ -11,6 +14,7 @@ pub fn run(args: MachineArgs) -> CommandResult {
         MachineCommand::Rho => rho(),
         MachineCommand::Gpu => gpu(),
         MachineCommand::Parquet(args) => parquet(args),
+        MachineCommand::Ssd(args) => ssd(args),
     }
 }
 
@@ -36,6 +40,17 @@ fn ingest() -> CommandResult {
 
 fn rho() -> CommandResult {
     run_container_machine(&["gpu", "rho-guess"])
+}
+
+fn ssd(args: SsdArgs) -> CommandResult {
+    match args.command {
+        SsdCommand::Info => inspect_ssd(),
+    }
+}
+
+fn inspect_ssd() -> CommandResult {
+    inspect_and_display()?;
+    Ok(())
 }
 
 fn gpu() -> CommandResult {

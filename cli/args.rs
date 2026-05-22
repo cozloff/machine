@@ -1,4 +1,10 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
+
+pub mod build_args;
+pub mod creds_args;
+pub mod kube_args;
+pub mod machine_args;
+pub mod test_args;
 
 #[derive(Parser)]
 #[command(name = "gum")]
@@ -11,131 +17,13 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     /// Run test workflows and terminal output examples
-    Test(TestArgs),
+    Test(test_args::TestArgs),
+    /// Run build workflows
+    Build(build_args::BuildArgs),
     /// Run machine workflows
-    Mach(MachineArgs),
+    Mach(machine_args::MachineArgs),
     /// Run Kubernetes workflows
-    Kube(KubernetesArgs),
+    Kube(kube_args::KubernetesArgs),
     /// Run credential management workflows
-    Creds(CredsArgs),
-}
-
-#[derive(Args)]
-pub struct TestArgs {
-    #[command(subcommand)]
-    pub command: Option<TestCommand>,
-}
-
-#[derive(Clone, Copy, Subcommand)]
-pub enum TestCommand {
-    /// Print the gumball machine test screen
-    Art,
-    /// Run test command one
-    One,
-    /// Run test command two
-    Two,
-    /// Run test command three
-    Three,
-    /// Run test command four
-    Four,
-    /// Run test command five
-    Five,
-    /// Run test command six
-    Six,
-    /// Run test command seven
-    Seven,
-    /// Run test command eight
-    Eight,
-    /// Run test command nine
-    Nine,
-    /// Run test command ten
-    Ten,
-}
-
-#[derive(Args)]
-pub struct MachineArgs {
-    #[command(subcommand)]
-    pub command: MachineCommand,
-}
-
-#[derive(Subcommand)]
-pub enum MachineCommand {
-    /// Start up machine docker
-    Up,
-    /// Shut down machine docker
-    Down,
-    /// Rebuild machine docker
-    Rebuild,
-    /// Start Ingestion workflow
-    Ingest,
-    /// Start Rho-guesser
-    Rho,
-    /// Start gpu reporting
-    Gpu,
-    /// Parquet subcommands
-    Parquet(ParquetArgs),
-}
-
-#[derive(Args)]
-pub struct ParquetArgs {
-    #[command(subcommand)]
-    pub command: ParquetCommand,
-}
-
-#[derive(Clone, Copy, Subcommand)]
-pub enum ParquetCommand {
-    /// Run parquet write test
-    Create,
-    /// Run parquet compression test
-    Nvcomp,
-}
-
-#[derive(Args)]
-pub struct KubernetesArgs {
-    #[command(subcommand)]
-    pub command: KubernetesCommand,
-}
-
-#[derive(Subcommand)]
-pub enum KubernetesCommand {
-    /// Start up minikube and deploy machine
-    Mini,
-    /// Deploy subcommands
-    Deploy(DeployArgs),
-}
-
-#[derive(Args)]
-pub struct DeployArgs {
-    #[command(subcommand)]
-    pub command: DeployCommand,
-}
-
-#[derive(Subcommand)]
-pub enum DeployCommand {
-    /// Machine subcommands
-    Machine(DeployMachineArgs),
-}
-
-#[derive(Args)]
-pub struct DeployMachineArgs {
-    #[command(subcommand)]
-    pub command: MachineTargets,
-}
-
-#[derive(Subcommand)]
-pub enum MachineTargets {
-    /// Machine to local machine cluster
-    Local,
-}
-
-#[derive(Args)]
-pub struct CredsArgs {
-    #[command(subcommand)]
-    pub command: CredsCommand,
-}
-
-#[derive(Subcommand)]
-pub enum CredsCommand {
-    /// Create .env file with creds from az login
-    Env,
+    Creds(creds_args::CredsArgs),
 }

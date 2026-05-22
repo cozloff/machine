@@ -1,5 +1,6 @@
 use crate::args::{Cli, Commands};
 
+pub mod build;
 pub mod creds;
 pub mod kube;
 pub mod machine;
@@ -10,6 +11,7 @@ pub use crate::services::CommandResult;
 pub fn run(cli: Cli) -> CommandResult {
     match cli.command {
         Commands::Test(args) => test::run(args),
+        Commands::Build(args) => build::run(args),
         Commands::Mach(args) => machine::run(args),
         Commands::Kube(args) => kube::run(args),
         Commands::Creds(args) => creds::run(args),
