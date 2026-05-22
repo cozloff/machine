@@ -74,23 +74,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # LazyVim/Mason language tooling foundations. 
     nodejs npm python3 python3-pip python3-venv python3-pynvim luarocks \
     \
+    # Install OpenAI Codex CLI globally with npm.
+    && npm install -g @openai/codex \
+    \
     # Create a symlink for fdfind to fd
-    ln -s /usr/bin/fdfind /usr/local/bin/fd \
+    && ln -s /usr/bin/fdfind /usr/local/bin/fd \
     \
     # Install Neovim from the official GitHub releases. 
-    curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+    && curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
     | tar -xz -C /opt \
     && ln -s /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
     && ln -s /usr/local/bin/nvim /usr/local/bin/vim \
     && ln -s /usr/local/bin/nvim /usr/local/bin/vi \
     \
     # Set up a basic Neovim config by cloning the LazyVim starter template.
-    git clone --filter=blob:none https://github.com/LazyVim/starter /root/.config/nvim \
+    && git clone --filter=blob:none https://github.com/LazyVim/starter /root/.config/nvim \
     && rm -rf /root/.config/nvim/.git \
     && mkdir -p /root/.local/share/nvim /root/.local/state/nvim /root/.cache/nvim \
-    nvim --headless "+Lazy! sync" +qa \
+    && nvim --headless "+Lazy! sync" +qa \
     # Install Rust using rustup with the minimal profile to save space, and set the default toolchain to stable.
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable \
     \
     # Clean up apt cache to reduce image size.
