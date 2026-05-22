@@ -4,6 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Pacific/Honolulu
 ENV RUSTUP_HOME=/usr/local/rustup
 ENV CARGO_HOME=/usr/local/cargo
+ENV NVIM_VERSION=stable
 ENV PATH=/usr/local/cargo/bin:$PATH
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -26,10 +27,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # JSON parser; essential for reading API responses and CLI output cleanly.
     jq \
     \
-    # Pager for reading long logs/configs without dumping everything at once.
+    # Pagers, fuzzy finding, and fast search for shell and Neovim workflows.
     less \
+    fzf \
+    ripgrep \
+    fd-find \
     \
-    # Small editors for emergency edits inside the container.
+    # Small fallback editors for emergency edits inside the container.
     nano \
     vim-tiny \
     \
@@ -63,9 +67,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Common archive extraction.
     unzip \
     xz-utils \
+    tar \
+    gzip \
     \
     # Native compiler/toolchain base; useful for Rust crates with C/C++ build deps.
     build-essential \
+    cmake \
+    clang \
+    clangd \
     \
     # Lets build scripts discover native libraries and compiler/linker flags.
     pkg-config \
@@ -73,10 +82,30 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # OpenSSL headers/libs; many Rust/network/TLS crates need this unless using rustls.
     libssl-dev \
     \
+    # LazyVim/Mason language tooling foundations.
+    nodejs \
+    npm \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python3-pynvim \
+    luarocks \
+    \
     && rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/fdfind /usr/local/bin/fd
+
+RUN curl -fsSL "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz" \
+    | tar -xz -C /opt \
+    && ln -s /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim \
+    && ln -s /usr/local/bin/nvim /usr/local/bin/vim \
+    && ln -s /usr/local/bin/nvim /usr/local/bin/vi
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
     | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable
+
+RUN rustup component add rust-analyzer rustfmt clippy \
+    && cargo install --locked stylua tree-sitter-cli
 
 WORKDIR /opt/machine
 
@@ -84,6 +113,12 @@ COPY Cargo.toml Cargo.lock ./
 COPY cli ./cli
 
 RUN cargo install --path . --force
+
+RUN git clone --filter=blob:none https://github.com/LazyVim/starter /root/.config/nvim \
+    && rm -rf /root/.config/nvim/.git \
+    && mkdir -p /root/.local/share/nvim /root/.local/state/nvim /root/.cache/nvim
+
+RUN nvim --headless "+Lazy! sync" +qa
 
 WORKDIR /workspace
 
