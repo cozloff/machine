@@ -3,5 +3,4 @@ pub mod gateway_api;
 pub mod helm;
 pub mod kubectl;
 pub mod local_cluster;
-pub mod minikube;
 pub mod observability;

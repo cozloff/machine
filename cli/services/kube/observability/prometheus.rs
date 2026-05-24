@@ -6,6 +6,8 @@ const PROMETHEUS_REPO_NAME: &str = "prometheus-community";
 const PROMETHEUS_REPO_URL: &str = "https://prometheus-community.github.io/helm-charts";
 const PROMETHEUS_RELEASE: &str = "monitoring";
 const PROMETHEUS_CHART: &str = "kube-prometheus-stack";
+const PROMETHEUS_VALUES_FILE: &str =
+    "/workspace/cli/services/kube/observability/prometheus/values.local.yaml";
 
 pub trait Prometheus {
     fn install(&self) -> CommandResult;
@@ -42,7 +44,7 @@ impl<H: Helm> Prometheus for PrometheusCli<H> {
             &format!("{PROMETHEUS_REPO_NAME}/{PROMETHEUS_CHART}"),
             &self.namespace,
             Some(&set_values),
-            None,
+            Some(PROMETHEUS_VALUES_FILE),
         )
     }
 }

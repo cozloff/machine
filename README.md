@@ -17,6 +17,11 @@ Check that the CLI is available:
 gum test
 ```
 
+Check that the Kube config works: 
+```bash
+kubectl get nodes
+```
+
 ## Commands
 
 ```bash

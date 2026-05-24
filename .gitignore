@@ -9,7 +9,7 @@
 .env
 .env.*
 !.env.example
-/data/population.sqlite
+/data
 /build
 
 
@@ -17,5 +17,6 @@
 
 /target
 /api/target
+/engine/target
 
 Cargo.lock
