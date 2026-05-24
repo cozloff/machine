@@ -1,0 +1,4 @@
+prometheus-node-exporter:
+  hostRootFsMount:
+    enabled: true
+    mountPropagation: None

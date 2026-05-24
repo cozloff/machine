@@ -87,6 +87,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -s /usr/local/bin/nvim /usr/local/bin/vim \
     && ln -s /usr/local/bin/nvim /usr/local/bin/vi \
     \
+    # Install Kubernetes client tooling used against the k3s service.
+    && curl -fsSL https://dl.k8s.io/release/stable.txt \
+    | xargs -I{} curl -fsSL -o /usr/local/bin/kubectl "https://dl.k8s.io/release/{}/bin/linux/amd64/kubectl" \
+    && chmod +x /usr/local/bin/kubectl \
+    && curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 \
+    | bash \
+    \
     # Set up a basic Neovim config by cloning the LazyVim starter template.
     && git clone --filter=blob:none https://github.com/LazyVim/starter /root/.config/nvim \
     && rm -rf /root/.config/nvim/.git \

@@ -8,9 +8,108 @@ services:
     stdin_open: true # Keep the container running
     tty: true        # Allocate a pseudo-TTY for interactive use 
     privileged: true
+    environment:
+      LOKI_AZURE_STORAGE_ACCOUNT: ${LOKI_AZURE_STORAGE_ACCOUNT}
+      LOKI_AZURE_STORAGE_KEY: ${LOKI_AZURE_STORAGE_KEY}
+      LOKI_AZURE_BLOB_CONTAINER: ${LOKI_AZURE_BLOB_CONTAINER}
+      LOKI_SCOPE_ORG_ID: ${LOKI_SCOPE_ORG_ID}
+      GRAFANA_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      KUBECONFIG: /kube/kubeconfig.yaml
     volumes:
       - .:/workspace
       - /sys:/sys:ro
       - /dev:/dev
+      - kubeconfig:/kube
     ports:
       - "8080:8080"
+      - "3000:3000"
+    depends_on:
+      - k3s
+
+  k3s:
+    container_name: k3s
+    hostname: k3s
+    image: rancher/k3s:latest
+    privileged: true
+    cgroup: host
+    cpus: 4
+    mem_limit: 8g
+    shm_size: 2g
+    gpus: all
+    entrypoint:
+      - /bin/sh
+      - -c
+    command:
+      - >
+        /bin/k3s server
+        --disable=traefik
+        --node-name=k3s
+        --kubelet-arg=cgroup-driver=cgroupfs
+        --write-kubeconfig=/kube/kubeconfig.yaml
+        --write-kubeconfig-mode=644
+        --tls-san=k3s
+        &
+        pid=$$!;
+        while kill -0 $$pid 2>/dev/null; do
+          if [ -f /kube/kubeconfig.yaml ]; then
+            sed -i 's#https://127.0.0.1:6443#https://k3s:6443#g' /kube/kubeconfig.yaml;
+          fi;
+          sleep 2;
+        done;
+        wait $$pid
+    tmpfs:
+      - /run:size=1g
+      - /var/run:size=1g
+    volumes:
+      - k3s-data:/var/lib/rancher/k3s
+      - kubeconfig:/kube
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    ports:
+      - "6443:6443"
+
+  headlamp:
+    container_name: headlamp
+    image: ghcr.io/headlamp-k8s/headlamp:latest
+    command:
+      - -in-cluster=false
+      - -kubeconfig=/kube/kubeconfig.yaml
+      - -listen-addr=0.0.0.0
+      - -port=4466
+    volumes:
+      - kubeconfig:/kube:ro
+    ports:
+      - "4466:4466"
+    depends_on:
+      - k3s
+
+  duckdb:
+    container_name: duckdb
+    image: duckdb/duckdb:latest
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    profiles:
+      - cli
+    volumes:
+      - .:/workspace
+    command:
+      - duckdb
+      - /workspace/data/energy.duckdb
+
+  duckdb-ui:
+    container_name: duckdb-ui
+    image: duckdb/duckdb:latest
+    working_dir: /workspace
+    network_mode: host
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace
+    command:
+      - duckdb
+      - /workspace/data/energy.duckdb
+      - -ui
+
+volumes:
+  k3s-data:
+  kubeconfig:

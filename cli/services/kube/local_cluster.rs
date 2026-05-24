@@ -1,10 +1,9 @@
 use crate::services::CommandResult;
-use crate::services::cmd::ProcessCmd;
+use crate::services::cmd::{Cmd, ProcessCmd};
 use crate::services::kube::cert_manager::{CertManager, CertManagerCli};
 use crate::services::kube::gateway_api::{GatewayApi, GatewayApiCli};
 use crate::services::kube::helm::HelmCli;
 use crate::services::kube::kubectl::{Kubectl, KubectlCli};
-use crate::services::kube::minikube::{Minikube, MinikubeCli};
 use crate::services::kube::observability::alloy::AlloyCli;
 use crate::services::kube::observability::loki_grafana::LokiGrafanaCli;
 use crate::services::kube::observability::prometheus::PrometheusCli;
@@ -12,6 +11,8 @@ use crate::services::kube::observability::{
     NAMESPACE as OBSERVABILITY_NAMESPACE, Observability, ObservabilityCli,
     require_observability_env,
 };
+use anyhow::{Context, anyhow};
+use std::{thread, time::Duration};
 
 const GATEWAY_NAMESPACE: &str = "nginx-gateway";
 
@@ -33,7 +34,7 @@ impl ApplicationInfra for NoopApplicationInfra {
 }
 
 pub struct LocalClusterCli {
-    minikube: Box<dyn Minikube>,
+    cmd: Box<dyn Cmd>,
     kubectl: Box<dyn Kubectl>,
     gateway_api: Box<dyn GatewayApi>,
     cert_manager: Box<dyn CertManager>,
@@ -43,7 +44,7 @@ pub struct LocalClusterCli {
 
 impl LocalClusterCli {
     pub fn new(
-        minikube: Box<dyn Minikube>,
+        cmd: Box<dyn Cmd>,
         kubectl: Box<dyn Kubectl>,
         gateway_api: Box<dyn GatewayApi>,
         cert_manager: Box<dyn CertManager>,
@@ -51,7 +52,7 @@ impl LocalClusterCli {
         application_infra: Box<dyn ApplicationInfra>,
     ) -> Self {
         Self {
-            minikube,
+            cmd,
             kubectl,
             gateway_api,
             cert_manager,
@@ -90,7 +91,7 @@ impl LocalClusterCli {
         );
 
         Ok(Self::new(
-            Box::new(MinikubeCli::new(ProcessCmd)),
+            Box::new(ProcessCmd),
             Box::new(KubectlCli::new(ProcessCmd)),
             Box::new(gateway_api),
             Box::new(cert_manager),
@@ -100,18 +101,35 @@ impl LocalClusterCli {
     }
 
     fn pre_flight_checks(&self) -> CommandResult {
-        for binary in ["kubectl", "helm", "minikube"] {
-            which::which(binary)?;
+        for binary in ["kubectl", "helm"] {
+            which::which(binary)
+                .with_context(|| format!("required binary `{binary}` was not found in PATH"))?;
         }
 
         Ok(())
+    }
+
+    fn wait_for_cluster(&self) -> CommandResult {
+        println!("Waiting for k3s Kubernetes API...");
+
+        for _ in 0..60 {
+            if self.cmd.ok("kubectl", &["get", "nodes"]) {
+                return Ok(());
+            }
+
+            thread::sleep(Duration::from_secs(2));
+        }
+
+        Err(anyhow!(
+            "k3s Kubernetes API was not ready after 120 seconds; check `docker compose logs k3s`"
+        ))
     }
 }
 
 impl LocalCluster for LocalClusterCli {
     fn run(&self) -> CommandResult {
         self.pre_flight_checks()?;
-        self.minikube.boot()?;
+        self.wait_for_cluster()?;
 
         println!("{}", self.gateway_api.get_info());
 

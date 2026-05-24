@@ -8,10 +8,12 @@ pub struct KubernetesArgs {
 
 #[derive(Subcommand)]
 pub enum KubernetesCommand {
-    /// Start up minikube and deploy machine
-    Mini,
+    /// Configure the local k3s cluster
+    K3s,
     /// Deploy subcommands
     Deploy(DeployArgs),
+    /// Port-forward local services
+    Forward(ForwardArgs),
 }
 
 #[derive(Args)]
@@ -36,4 +38,23 @@ pub struct DeployMachineArgs {
 pub enum MachineTargets {
     /// Machine to local machine cluster
     Local,
+}
+
+#[derive(Args)]
+pub struct ForwardArgs {
+    #[command(subcommand)]
+    pub command: ForwardCommand,
+}
+
+#[derive(Subcommand)]
+pub enum ForwardCommand {
+    /// Forward Grafana to localhost
+    Grafana(PortForwardArgs),
+}
+
+#[derive(Args)]
+pub struct PortForwardArgs {
+    /// Local port to listen on
+    #[arg(long, default_value_t = 3000)]
+    pub local_port: u16,
 }
